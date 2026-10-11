@@ -56,8 +56,9 @@ export function DesignFonts({ fonts }: { fonts: CustomFont[] }) {
   return (
     <Card title="Fonts">
       <p className="text-subtle mb-3 text-sm">
-        Download a family from Google Fonts by its exact name, e.g. Roboto Slab. Only the Latin
-        subset is stored on this server; screens and the AI can then use it.
+        Download a family from Google Fonts by its exact name, e.g. Roboto Slab (names are
+        case-sensitive). Only the Latin subset is stored on this server; screens and the AI can then
+        use it.
       </p>
       <form onSubmit={(e) => void add(e)} className="mb-3 flex gap-2">
         <input

@@ -49,14 +49,15 @@ function fakeFetch(routes: Record<string, Route>) {
     calls.push(url);
     inits.push(init);
     const r = routes[url];
-    if (!r) return new Response('missing', { status: 404 });
+    // Google answers 400 for any stylesheet request it cannot serve.
+    if (!r) return new Response('missing', { status: url.includes('googleapis') ? 400 : 404 });
     return new Response(r.body ?? '', { status: r.status ?? 200, headers: r.headers });
   }) as typeof fetch;
   return { fn, calls, inits };
 }
 
-const cssUrl = (name: string, axis: boolean) =>
-  `https://fonts.googleapis.com/css2?family=${name.replace(/ /g, '+')}${axis ? ':wght@100..900' : ''}&display=block`;
+const cssUrl = (name: string, axis: boolean | string) =>
+  `https://fonts.googleapis.com/css2?family=${name.replace(/ /g, '+')}${axis === true ? ':wght@100..900' : axis ? `:${axis}` : ''}&display=block`;
 
 let dir: string;
 
@@ -126,24 +127,84 @@ describe('addGoogleFont', () => {
     );
   });
 
-  it('falls back to the plain URL when the weight range is rejected', async () => {
+  it('stores a single-weight family found by probing', async () => {
     const { fn, calls } = fakeFetch({
       [cssUrl('Bungee', true)]: { status: 400 },
       [cssUrl('Bungee', false)]: { body: face('latin', '400', `${GSTATIC}b.woff2`) },
+      [cssUrl('Bungee', 'wght@400')]: { body: face('latin', '400', `${GSTATIC}b.woff2`) },
       [`${GSTATIC}b.woff2`]: { body: woff2('b') },
     });
     const font = await addGoogleFont('Bungee', { fetch: fn });
-    expect(font.files[0]!.weight).toBe('400');
+    expect(font.files.map((f) => f.weight)).toEqual(['400']);
     expect(calls[0]).toBe(cssUrl('Bungee', true));
-    expect(calls[1]).toBe(cssUrl('Bungee', false));
+    expect(calls).toHaveLength(1 + 1 + 9 + 1);
+  });
+
+  it('finds the variable range of a family that is not 100..900', async () => {
+    const { fn } = fakeFetch({
+      [cssUrl('Josefin Sans', true)]: { status: 400 },
+      [cssUrl('Josefin Sans', false)]: { body: face('latin', '400', `${GSTATIC}j4.woff2`) },
+      ...Object.fromEntries(
+        [100, 200, 300, 400, 500, 600, 700].map((w) => [
+          cssUrl('Josefin Sans', `wght@${w}`),
+          { body: face('latin', String(w), `${GSTATIC}j4.woff2`) },
+        ]),
+      ),
+      [cssUrl('Josefin Sans', 'wght@100..700')]: {
+        body: face('latin', '100 700', `${GSTATIC}j.woff2`),
+      },
+      [`${GSTATIC}j.woff2`]: { body: woff2('j') },
+    });
+    const font = await addGoogleFont('Josefin Sans', { fetch: fn });
+    expect(font.files.map((f) => f.weight)).toEqual(['100 700']);
+  });
+
+  it('requests the weight list for a static family', async () => {
+    const { fn } = fakeFetch({
+      [cssUrl('Old Static', true)]: { status: 400 },
+      [cssUrl('Old Static', false)]: { body: face('latin', '400', `${GSTATIC}s4.woff2`) },
+      [cssUrl('Old Static', 'wght@400')]: { body: face('latin', '400', `${GSTATIC}s4.woff2`) },
+      [cssUrl('Old Static', 'wght@700')]: { body: face('latin', '700', `${GSTATIC}s7.woff2`) },
+      [cssUrl('Old Static', 'wght@400..700')]: { status: 400 },
+      [cssUrl('Old Static', 'wght@400;700')]: {
+        body: [
+          face('latin', '400', `${GSTATIC}s4.woff2`),
+          face('latin', '700', `${GSTATIC}s7.woff2`),
+        ].join('\n'),
+      },
+      [`${GSTATIC}s4.woff2`]: { body: woff2('s4') },
+      [`${GSTATIC}s7.woff2`]: { body: woff2('s7') },
+    });
+    const font = await addGoogleFont('Old Static', { fetch: fn });
+    expect(font.files.map((f) => f.weight)).toEqual(['400', '700']);
+  });
+
+  it('retries a lower-case name with each word capitalised', async () => {
+    const { fn, calls } = fakeFetch({
+      [cssUrl('roboto slab', true)]: { status: 400 },
+      [cssUrl('roboto slab', false)]: { status: 400 },
+      [cssUrl('Roboto Slab', true)]: { body: face('latin', '100 900', `${GSTATIC}a.woff2`) },
+      [`${GSTATIC}a.woff2`]: { body: woff2('a') },
+    });
+    const font = await addGoogleFont('roboto slab', { fetch: fn });
+    expect(font.family).toBe('Roboto Slab');
+    expect(calls).toContain(cssUrl('Roboto Slab', true));
   });
 
   it('404s for a name Google does not know', async () => {
-    const { fn } = fakeFetch({
+    const { fn, calls } = fakeFetch({
       [cssUrl('Nope Font', true)]: { status: 400 },
       [cssUrl('Nope Font', false)]: { status: 400 },
     });
-    await rejects(addGoogleFont('Nope Font', { fetch: fn }), 404, /No Google Font named Nope Font/);
+    await rejects(
+      addGoogleFont('Nope Font', { fetch: fn }),
+      404,
+      /^No Google Font named "Nope Font"\. Use the exact name and capitalisation/,
+    );
+    expect(calls).toHaveLength(2);
+    const lower = fakeFetch({});
+    await rejects(addGoogleFont('nope font', { fetch: lower.fn }), 404, /named "nope font"/);
+    expect(lower.calls).toHaveLength(4);
   });
 
   it('502s on other upstream failures', async () => {
