@@ -65,7 +65,7 @@ export function DesignFonts({ fonts }: { fonts: CustomFont[] }) {
           className={`${inputBase} min-w-0 flex-1`}
           value={family}
           maxLength={64}
-          placeholder="Roboto Slab"
+          placeholder="e.g. Roboto Slab"
           aria-label="Google Fonts family name"
           disabled={pending}
           onChange={(e) => setFamily(e.target.value)}
@@ -89,7 +89,8 @@ export function DesignFonts({ fonts }: { fonts: CustomFont[] }) {
                   {f.family}
                 </p>
                 <p className="text-subtle text-xs">
-                  Weights {f.files.map((x) => x.weight).join(', ')} · {kb(f.bytes)} KB
+                  Weights {f.files.map((x) => x.weight.replace(' ', '–')).join(', ')} ·{' '}
+                  {kb(f.bytes)} KB
                 </p>
               </div>
               <Button
