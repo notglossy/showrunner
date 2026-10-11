@@ -28,9 +28,12 @@ changes the code it describes so that the decision no longer holds; if it does, 
   self-hosted runner in this workflow, so runner-hardening findings do not apply.
 - **Review history.** The prompt tells the agent to read the PR's existing review comments and not re-raise
   answered findings. There is no separate digest step to harden.
-- **Instructions file read from the PR head.** This file is pulled in with `{{#runtime-import? ...}}` from the
-  checked-out PR at run time, on purpose. Same-repo authors already control the workflow source, so this adds no
-  attack surface, and a missing file is skipped rather than failing the run.
+- **Instructions file read from the PR head, base version wins when it changes.** This file is pulled in with
+  `{{#runtime-import? ...}}` from the checked-out PR at run time, and a missing file is skipped rather than failing
+  the run. When a PR edits this file, the shared prompt's "Repository instructions" section tells the agent to
+  follow the base version instead and review the edit as a change. That guards against a PR rewriting its own
+  review rules by accident or through injected text; it is not a security boundary, since same-repo authors can
+  also edit `pr-review.md`, whose prompt body is read from the PR at run time too.
 
 ### Android shell (`apps/android`)
 
