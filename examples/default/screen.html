@@ -1,18 +1,18 @@
 <style>
-  /* Weather panel color. Change it here to restyle the screen. */
-  :root { --mb-accent: #6136f5; }
-  .mb-root { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); background: #000; color: #f2f2f2; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500; }
-  .mb-mono { font-family: "JetBrains Mono", monospace; font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
+  /* Weather panel color follows the Design theme; the fallback is the default. Change it here to restyle the screen. */
+  :root { --mb-accent: var(--sr-accent, #6136f5); }
+  .mb-root { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); background: var(--sr-bg, #000); color: var(--sr-text, #f2f2f2); font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif); font-weight: 500; }
+  .mb-mono { font-family: var(--sr-font-mono, "JetBrains Mono", monospace); font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
   .mb-clock { padding: 64px; display: flex; flex-direction: column; justify-content: space-between; }
   .mb-date { font-size: 30px; color: #9aa3b2; }
   .mb-timerow { display: flex; align-items: flex-start; }
-  .mb-time { font-size: 216px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .mb-time { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 216px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .mb-ampm { font-size: 44px; color: #9aa3b2; margin: 18px 0 0 16px; }
-  .mb-greeting { font-size: 44px; color: #c9ced8; }
+  .mb-greeting { font-size: 44px; color: var(--sr-text-muted, #c9ced8); }
   .mb-weather { background: var(--mb-accent); color: #fff; padding: 56px; display: flex; flex-direction: column; justify-content: space-between; }
   .mb-place { font-size: 26px; color: #e6e0ff; }
   .mb-tempwrap { display: flex; align-items: flex-start; }
-  .mb-temp { font-size: 160px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .mb-temp { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 160px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .mb-unit { font-size: 48px; margin: 12px 0 0 8px; }
   .mb-cond { font-size: 40px; margin-top: 16px; }
   .mb-hilo { font-size: 28px; margin-top: 12px; color: #e6e0ff; font-variant-numeric: tabular-nums; }
