@@ -94,8 +94,11 @@ export const DeviceLogsQuerySchema = z.object({
   before: z.coerce.number().pipe(z.int().min(1)).optional(),
 });
 
+/** Maximum screen name length, shared by create/update and client-side duplication. */
+export const SCREEN_NAME_MAX = 100;
+
 export const CreateScreenRequestSchema = z.object({
-  name: z.string().trim().min(1).max(100),
+  name: z.string().trim().min(1).max(SCREEN_NAME_MAX),
   description: z.string().max(500).default(''),
   html: z.string().min(1).max(512000),
   dataRefreshSeconds: z.int().min(5).max(3600).default(60),
@@ -105,7 +108,7 @@ export const CreateScreenRequestSchema = z.object({
 
 export const UpdateScreenRequestSchema = z
   .object({
-    name: z.string().trim().min(1).max(100).optional(),
+    name: z.string().trim().min(1).max(SCREEN_NAME_MAX).optional(),
     description: z.string().max(500).optional(),
     html: z.string().min(1).max(512000).optional(),
     dataRefreshSeconds: z.int().min(5).max(3600).optional(),

@@ -32,6 +32,7 @@ export default async function NewScreenPage() {
           html: STARTER,
           dataRefreshSeconds: 60,
           source: 'user',
+          generationPrompt: null,
         }}
         sampleData={samplePayload()}
         usage={{ devices: [], playlists: [] }}
