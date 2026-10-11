@@ -1,3 +1,5 @@
+import { KIOSK_FONTS } from '@/lib/render/fonts';
+
 import type { CustomFont } from './tokens';
 
 // TODO: Piece A (fonts) implements this file. Signatures are the contract; keep them.
@@ -9,7 +11,7 @@ export function listCustomFonts(): CustomFont[] {
 
 /** Bundled plus downloaded family names, for the theme's font pickers and validation. */
 export function availableFontFamilies(): string[] {
-  return [];
+  return [...KIOSK_FONTS.map((f) => f.family), ...listCustomFonts().map((f) => f.family)];
 }
 
 /** Downloads a family from Google Fonts (Latin subset, normal style), stores it, and reloads every device. */
