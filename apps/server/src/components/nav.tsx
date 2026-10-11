@@ -13,6 +13,7 @@ const LINKS = [
   { href: '/devices', label: 'Devices' },
   { href: '/screens', label: 'Screens' },
   { href: '/playlists', label: 'Playlists' },
+  { href: '/design', label: 'Design' },
   { href: '/settings', label: 'Settings' },
 ];
 

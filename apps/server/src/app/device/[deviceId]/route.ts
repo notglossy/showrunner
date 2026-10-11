@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server';
 
 import { ApiError } from '@/lib/api/http';
+import { designCss } from '@/lib/design/css';
 import { requireDeviceOrAdmin, type Viewer } from '@/lib/auth/device';
 import { currentScreenOf } from '@/lib/devices/service';
 import { buildDataPayload } from '@/lib/providers/payload';
@@ -60,6 +61,7 @@ export async function GET(req: NextRequest, { params }: RouteContext<'/device/[d
         urls: deviceUrls(device.id),
         data,
       },
+      designCss: designCss(),
     }),
   );
 }

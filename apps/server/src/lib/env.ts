@@ -22,6 +22,8 @@ const EnvSchema = z.object({
         return false;
       }
     }, 'KIOSK_TIMEZONE must be a valid IANA timezone'),
+  /** Downloaded Google Fonts. Defaults to a fonts/ folder next to DATABASE_PATH (/data/fonts in Docker). */
+  FONTS_DIR: z.string().min(1).optional(),
   /** OpenAI-compatible Chat Completions API used for AI screen generation (OpenRouter by default). */
   AI_BASE_URL: z.url().default('https://openrouter.ai/api/v1'),
   /** Unset = AI generation disabled in the dashboard. */

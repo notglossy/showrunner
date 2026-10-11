@@ -33,10 +33,12 @@ export interface ScreenUsage {
 export function ScreenEditor({
   screen,
   sampleData,
+  designCss,
   usage,
 }: {
   screen: EditableScreen;
   sampleData: KioskDataPayload;
+  designCss: string;
   usage: ScreenUsage;
 }) {
   const router = useRouter();
@@ -250,6 +252,7 @@ export function ScreenEditor({
             html={draft.html}
             title={draft.name}
             sampleData={sampleData}
+            designCss={designCss}
             onLogs={setPreviewLogs}
           />
           {previewLogs.length > 0 && (

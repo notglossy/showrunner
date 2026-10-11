@@ -56,10 +56,13 @@ export function renderKioskDocument({
   title,
   body,
   boot,
+  designCss = '',
 }: {
   title: string;
   body: string;
   boot: KioskBoot;
+  /** Theme custom properties and downloaded-font rules (lib/design/css.ts), after the base CSS. */
+  designCss?: string;
 }): string {
   return `<!doctype html>
 <html lang="en" data-viewer="${boot.viewer}">
@@ -68,7 +71,7 @@ export function renderKioskDocument({
 <meta name="viewport" content="width=1280, user-scalable=no">
 <meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)} · ShowRunner</title>
-<style>${BASE_CSS}</style>
+<style>${BASE_CSS}${designCss}</style>
 <script>window.__KIOSK_BOOT__=${jsonForScript(boot)};</script>
 <script src="/kiosk/runtime.js?v=${RUNTIME_VERSION}"></script>
 </head>
