@@ -5,6 +5,7 @@ import path from 'node:path';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { GET as serveFont } from '@/app/kiosk/custom-fonts/[file]/route';
 import { ApiError } from '@/lib/api/http';
 import { getDb } from '@/lib/db/client';
 import { settings } from '@/lib/db/schema';
@@ -42,14 +43,16 @@ interface Route {
 /** Fake fetch answering by exact URL; records every requested URL. */
 function fakeFetch(routes: Record<string, Route>) {
   const calls: string[] = [];
-  const fn = (async (input: string | URL | Request) => {
+  const inits: (RequestInit | undefined)[] = [];
+  const fn = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
     calls.push(url);
+    inits.push(init);
     const r = routes[url];
     if (!r) return new Response('missing', { status: 404 });
     return new Response(r.body ?? '', { status: r.status ?? 200, headers: r.headers });
   }) as typeof fetch;
-  return { fn, calls };
+  return { fn, calls, inits };
 }
 
 const cssUrl = (name: string, axis: boolean) =>
@@ -99,7 +102,7 @@ describe('addGoogleFont', () => {
       face('latin', '100 900', `${GSTATIC}latin.woff2`),
       face('latin', '100 900', `${GSTATIC}italic.woff2`, 'italic'),
     ].join('\n');
-    const { fn, calls } = fakeFetch({
+    const { fn, calls, inits } = fakeFetch({
       [cssUrl('Roboto Slab', true)]: { body: css },
       [`${GSTATIC}latin.woff2`]: { body: latin },
     });
@@ -110,6 +113,11 @@ describe('addGoogleFont', () => {
     expect(font.files[0]!.file).toMatch(/^[0-9a-f]{32}\.woff2$/);
     expect(font.bytes).toBe(latin.length);
     expect(calls).toEqual([cssUrl('Roboto Slab', true), `${GSTATIC}latin.woff2`]);
+    for (const init of inits) {
+      expect(init?.redirect).toBe('error');
+      expect(init?.signal).toBeInstanceOf(AbortSignal);
+    }
+    expect(fs.readdirSync(process.env.FONTS_DIR!)).toEqual([font.files[0]!.file]);
     expect(listCustomFonts()).toEqual([font]);
     expect(availableFontFamilies()).toContain('Roboto Slab');
     expect(fs.readFileSync(path.join(process.env.FONTS_DIR!, font.files[0]!.file))).toEqual(latin);
@@ -171,6 +179,8 @@ describe('addGoogleFont', () => {
       'https://evil.example.com/a.woff2',
       'http://fonts.gstatic.com/a.woff2',
       'https://fonts.gstatic.com.evil.example/a.woff2',
+      'https://fonts.gstatic.com:8443/a.woff2',
+      'https://user:pw@fonts.gstatic.com/a.woff2',
     ]) {
       const { fn, calls } = fakeFetch({
         [cssUrl('Roboto Slab', true)]: { body: face('latin', '400', url) },
@@ -198,6 +208,38 @@ describe('addGoogleFont', () => {
     });
     await rejects(addGoogleFont('Roboto Slab', { fetch: streamed.fn }), 502, /1\.5 MB/);
     expect(listCustomFonts()).toEqual([]);
+  });
+
+  it('enforces the 5 MB family cap', async () => {
+    const weights = ['100', '200', '300', '400'];
+    const routes: Record<string, Route> = {
+      [cssUrl('Roboto Slab', true)]: {
+        body: weights.map((w) => face('latin', w, `${GSTATIC}${w}.woff2`)).join('\n'),
+      },
+    };
+    for (const w of weights)
+      routes[`${GSTATIC}${w}.woff2`] = {
+        body: Buffer.concat([Buffer.from('wOF2'), Buffer.alloc(1.4 * 1024 * 1024, w)]),
+      };
+    await rejects(addGoogleFont('Roboto Slab', { fetch: fakeFetch(routes).fn }), 502, /5 MB/);
+    expect(listCustomFonts()).toEqual([]);
+  });
+
+  it('rejects an oversize stylesheet', async () => {
+    const { fn } = fakeFetch({
+      [cssUrl('Roboto Slab', true)]: { body: 'x'.repeat(300 * 1024) },
+    });
+    await rejects(addGoogleFont('Roboto Slab', { fetch: fn }), 502, /large stylesheet/);
+  });
+
+  it('stores the canonical family name from the stylesheet', async () => {
+    const { fn } = fakeFetch({
+      [cssUrl('roboto slab', true)]: { body: face('latin', '400', `${GSTATIC}a.woff2`) },
+      [`${GSTATIC}a.woff2`]: { body: woff2('a') },
+    });
+    const font = await addGoogleFont('roboto slab', { fetch: fn });
+    expect(font.family).toBe('Roboto Slab');
+    await rejects(addGoogleFont('ROBOTO SLAB', { fetch: fn }), 409);
   });
 
   it('rejects a file without the woff2 magic bytes', async () => {
@@ -273,5 +315,27 @@ describe('customFontPath', () => {
     for (const bad of ['../x.woff2', 'a.woff2', `${'A'.repeat(32)}.woff2`, `${'a'.repeat(32)}.ttf`])
       expect(customFontPath(bad)).toBeNull();
     expect(customFontPath(`${'a'.repeat(32)}.woff2`)).not.toBeNull();
+  });
+});
+
+describe('font file route', () => {
+  const get = (file: string) =>
+    serveFont(new Request('http://x/'), { params: Promise.resolve({ file }) } as never);
+
+  it('serves stored files with CORS and caching headers, 404 otherwise', async () => {
+    const { fn } = fakeFetch({
+      [cssUrl('Roboto Slab', true)]: { body: face('latin', '400', `${GSTATIC}a.woff2`) },
+      [`${GSTATIC}a.woff2`]: { body: woff2('a') },
+    });
+    const font = await addGoogleFont('Roboto Slab', { fetch: fn });
+    const res = await get(font.files[0]!.file);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('font/woff2');
+    expect(res.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(Buffer.from(await res.arrayBuffer())).toEqual(woff2('a'));
+    expect((await get('../../etc/passwd')).status).toBe(404);
+    expect((await get(`${'a'.repeat(32)}.woff2`)).status).toBe(404);
   });
 });

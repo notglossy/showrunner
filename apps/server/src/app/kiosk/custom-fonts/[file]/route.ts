@@ -15,6 +15,9 @@ export async function GET(_req: Request, { params }: Ctx): Promise<Response> {
       headers: {
         'content-type': 'font/woff2',
         'cache-control': 'public, max-age=31536000, immutable',
+        // The editor preview iframe is sandboxed (opaque origin), so font loads are cross-origin.
+        'access-control-allow-origin': '*',
+        'x-content-type-options': 'nosniff',
       },
     });
   } catch {
