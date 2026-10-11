@@ -99,7 +99,13 @@ export function ScreenEditor({
           method: 'PATCH',
           body,
         });
-        setSaved({ ...draft, source: updated.source });
+        const next = {
+          ...draft,
+          source: updated.source,
+          generationPrompt: updated.generationPrompt,
+        };
+        setSaved(next);
+        setDraft(next);
         setAiPrompt(null);
         router.refresh();
       } else {
