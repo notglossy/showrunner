@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 
 import { ApiError } from '@/lib/api/http';
-import { designCss } from '@/lib/design/css';
 import { requireDeviceOrAdmin, type Viewer } from '@/lib/auth/device';
+import { designCss } from '@/lib/design/css';
 import { currentScreenOf } from '@/lib/devices/service';
 import { buildDataPayload } from '@/lib/providers/payload';
 import { deviceUrls, renderKioskDocument, renderPlainPage } from '@/lib/render/document';
