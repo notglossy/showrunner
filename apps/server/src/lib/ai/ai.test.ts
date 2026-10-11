@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { type CustomFont, DEFAULT_THEME } from '@/lib/design/tokens';
 import { BUILTIN_SCREENS } from '@/lib/seed/screens';
 
 import {
@@ -10,7 +11,7 @@ import {
   streamChat,
 } from './client';
 import { type GenerateEvent, generateScreen } from './generate';
-import { buildMessages, repairMessage, systemPrompt } from './prompt';
+import { buildMessages, designAppendix, repairMessage, systemPrompt } from './prompt';
 import { boundPaths, validateTemplate } from './validate';
 
 const FENCE = '```';
@@ -147,6 +148,52 @@ describe('prompt', () => {
     const doc = systemPrompt();
     expect(doc).toContain('# Screen authoring guide');
     expect(doc).toContain('## Response format');
+  });
+
+  it('uses an explicit doc verbatim and still ends with the response format', () => {
+    const prompt = systemPrompt('MY DOC');
+    expect(prompt.startsWith('MY DOC')).toBe(true);
+    expect(prompt).toContain("## This installation's theme and fonts");
+    expect(prompt.indexOf('## Response format')).toBeGreaterThan(
+      prompt.indexOf('## This installation'),
+    );
+    expect(prompt.endsWith('not a diff or excerpt.')).toBe(true);
+  });
+
+  it('builds the design appendix from the theme', () => {
+    const out = designAppendix(DEFAULT_THEME, []);
+    expect(out).toContain('| `--sr-bg` | `#000000` | Page background |');
+    expect(out).toContain(
+      '| `--sr-accent-text` | `#a995ff` | Accent on the background: text, icons, hands |',
+    );
+    expect(out).toContain(
+      '| `--sr-font-display` | `"Space Grotesk", system-ui, sans-serif` | Big numbers and headings |',
+    );
+    expect(out).toContain('| `--sr-font-mono` | `"JetBrains Mono", monospace` |');
+    expect(out).toContain('`color: var(--sr-text-muted, #c9ced8);`');
+    expect(out).not.toContain('Extra fonts');
+  });
+
+  it('uses current theme values and lists extra fonts with formatted weights', () => {
+    const fonts: CustomFont[] = [
+      { family: 'Inter', files: [{ file: 'a.woff2', weight: '100 900' }], bytes: 1, addedAt: '' },
+      {
+        family: 'Lora',
+        files: [
+          { file: 'b.woff2', weight: '700' },
+          { file: 'c.woff2', weight: '400' },
+        ],
+        bytes: 1,
+        addedAt: '',
+      },
+    ];
+    const theme = { ...DEFAULT_THEME, colors: { ...DEFAULT_THEME.colors, textMuted: '#123456' } };
+    const out = designAppendix(theme, fonts);
+    expect(out).toContain('| `--sr-text-muted` | `#123456` |');
+    expect(out).toContain('var(--sr-text-muted, #123456)');
+    expect(out).toContain('### Extra fonts downloaded by the owner');
+    expect(out).toContain('| `"Inter"` | 100–900 |');
+    expect(out).toContain('| `"Lora"` | 400, 700 |');
   });
 
   it('builds new-screen and revise messages', () => {
