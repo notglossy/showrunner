@@ -212,7 +212,11 @@ export const AddFontRequestSchema = z.object({
 });
 
 export const UpdateInstructionsRequestSchema = z.object({
-  text: z.string().min(1).max(200_000),
+  // Not .trim(): leading/trailing whitespace in the guide is the owner's to keep.
+  text: z
+    .string()
+    .max(200_000)
+    .refine((s) => s.trim().length > 0, 'Instructions cannot be empty'),
 });
 
 export const GeocodeQuerySchema = z.object({

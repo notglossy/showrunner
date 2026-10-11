@@ -209,7 +209,7 @@ export interface AddFontRequest {
 }
 
 export interface UpdateInstructionsRequest {
-  /** Replacement for the authoring guide sent to the AI. 1-200000 chars. */
+  /** Replacement for the authoring guide sent to the AI. Up to 200000 chars, not blank. */
   text: string;
 }
 
