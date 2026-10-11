@@ -8,6 +8,7 @@ import { api, ApiClientError } from '@/lib/client/api';
 import type { Screen } from '@/lib/db/schema';
 import type { KioskDataPayload } from '@/lib/providers/payload';
 import { buildDuplicateScreenInput } from '@/lib/screens/duplicate';
+import { isReadOnlyScreen } from '@/lib/screens/read-only';
 
 import { AiPanel, type AiResult } from './ai-panel';
 import { CodeEditor } from './code-editor';
@@ -48,6 +49,7 @@ export function ScreenEditor({
   const [aiHistory, setAiHistory] = useState<string[]>([]);
   /** Most recent instruction that produced the current draft, saved as generationPrompt. */
   const [aiPrompt, setAiPrompt] = useState<string | null>(null);
+  const readOnly = isReadOnlyScreen(saved);
   const dirty =
     draft.name !== saved.name ||
     draft.description !== saved.description ||
@@ -162,6 +164,7 @@ export function ScreenEditor({
             value={draft.name}
             onChange={(e) => setDraft({ ...draft, name: e.target.value })}
             required
+            disabled={readOnly}
           />
         </Field>
         <Field label="Description" className="min-w-72 flex-[2]">
@@ -169,6 +172,7 @@ export function ScreenEditor({
             className={inputClass}
             value={draft.description}
             onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            disabled={readOnly}
           />
         </Field>
         <Field label="Data refresh (s)" className="w-32">
@@ -179,37 +183,53 @@ export function ScreenEditor({
             max={3600}
             value={draft.dataRefreshSeconds}
             onChange={(e) => setDraft({ ...draft, dataRefreshSeconds: Number(e.target.value) })}
+            disabled={readOnly}
           />
         </Field>
         <div className="flex items-center gap-2 pb-0.5">
-          {dirty && <Badge tone="amber">Unsaved</Badge>}
-          {draft.id && (
-            <Button onClick={duplicate} disabled={pending}>
+          {readOnly ? (
+            <Button variant="primary" onClick={duplicate} disabled={pending}>
               Duplicate
             </Button>
+          ) : (
+            <>
+              {dirty && <Badge tone="amber">Unsaved</Badge>}
+              {draft.id && (
+                <Button onClick={duplicate} disabled={pending}>
+                  Duplicate
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                onClick={save}
+                disabled={pending || !dirty || !draft.name.trim() || !draft.html.trim()}
+              >
+                {pending ? 'Saving…' : draft.id ? 'Save' : 'Create screen'}
+              </Button>
+            </>
           )}
-          <Button
-            variant="primary"
-            onClick={save}
-            disabled={pending || !dirty || !draft.name.trim() || !draft.html.trim()}
-          >
-            {pending ? 'Saving…' : draft.id ? 'Save' : 'Create screen'}
-          </Button>
         </div>
       </div>
+      {readOnly && (
+        <p className="text-subtle text-sm">
+          Built-in screen: read-only. Duplicate it to make an editable copy.
+        </p>
+      )}
       <ErrorText>{error}</ErrorText>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-3">
-          <AiPanel
-            currentHtml={draft.html}
-            hasExistingScreen={Boolean(draft.id)}
-            previewErrors={previewLogs.map(
-              (l) => `${l.message}${l.line ? ` (line ${l.line})` : ''}`,
-            )}
-            onResult={applyAi}
-          />
-          {aiHistory.length > 0 && (
+          {!readOnly && (
+            <AiPanel
+              currentHtml={draft.html}
+              hasExistingScreen={Boolean(draft.id)}
+              previewErrors={previewLogs.map(
+                (l) => `${l.message}${l.line ? ` (line ${l.line})` : ''}`,
+              )}
+              onResult={applyAi}
+            />
+          )}
+          {!readOnly && aiHistory.length > 0 && (
             <div className="text-subtle flex items-center gap-2 text-xs">
               <Button size="sm" onClick={undoAi}>
                 Undo AI change
@@ -219,7 +239,7 @@ export function ScreenEditor({
               </span>
             </div>
           )}
-          <CodeEditor value={draft.html} onChange={setHtml} />
+          <CodeEditor value={draft.html} onChange={setHtml} readOnly={readOnly} />
           <p className="text-subtle mt-1 text-xs">
             Body fragment: one &lt;style&gt;, markup with data-bind attributes, optional
             &lt;script&gt;. See docs/screen-authoring.md.
@@ -268,11 +288,13 @@ export function ScreenEditor({
                   ))}
                 </ul>
               )}
-              <div className="mt-3 flex justify-end">
-                <Button variant="danger" size="sm" onClick={remove}>
-                  Delete screen
-                </Button>
-              </div>
+              {!readOnly && (
+                <div className="mt-3 flex justify-end">
+                  <Button variant="danger" size="sm" onClick={remove}>
+                    Delete screen
+                  </Button>
+                </div>
+              )}
             </Card>
           )}
         </div>

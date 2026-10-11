@@ -108,8 +108,8 @@ The last 1000 lines per device are kept.
 | `GET /api/screens` | | `{ screens }` (without `html`, with `htmlBytes`) |
 | `POST /api/screens` | `{ name, html, description?, dataRefreshSeconds?, source?: "user"\|"ai", generationPrompt? }` | 201 `{ screen }` |
 | `GET /api/screens/:id` | | `{ screen }` |
-| `PATCH /api/screens/:id` | any subset of the create fields | `{ screen }`; devices showing it reload |
-| `DELETE /api/screens/:id` | | 204, or 409 while assigned to a device or used in a playlist |
+| `PATCH /api/screens/:id` | any subset of the create fields | `{ screen }`; devices showing it reload; 403 `forbidden` for built-in screens (`source: "builtin"`, read-only; duplicate via `POST /api/screens` to get an editable copy) |
+| `DELETE /api/screens/:id` | | 204, or 409 while assigned to a device or used in a playlist; 403 `forbidden` for built-in screens (`source: "builtin"`, read-only; duplicate via `POST /api/screens` to get an editable copy) |
 | `GET /api/playlists` | | `{ playlists }` with `itemCount`, `totalSeconds` |
 | `POST /api/playlists` | `{ name, items?: [{ screenId, dwellSeconds }] }` | 201 `{ playlist }` |
 | `GET /api/playlists/:id` | | `{ playlist }` with ordered `items` |

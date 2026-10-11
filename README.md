@@ -71,9 +71,10 @@ install.
    The display shows a pairing code. In the dashboard, open **Devices**, claim the code and give
    the device a name. It starts on the built-in Default screen.
 
-4. **Make screens.** Edit the built-in screens or write new ones in the editor. The template
-   contract is [docs/screen-authoring.md](docs/screen-authoring.md). Set `AI_API_KEY` to
-   generate screens from a description.
+4. **Make screens.** Built-in screens are read-only: duplicate one to get an editable copy, or
+   write new screens in the editor. The template contract is
+   [docs/screen-authoring.md](docs/screen-authoring.md). Set `AI_API_KEY` to generate screens
+   from a description.
 
 ## Configuration
 

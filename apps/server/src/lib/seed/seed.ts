@@ -8,7 +8,7 @@ import { BUILTIN_SCREENS } from './screens';
 
 /**
  * Inserts the built-in screens when the screens table is empty (first boot).
- * Afterwards they're ordinary rows the owner can edit or delete.
+ * They stay read-only (source 'builtin'); the owner duplicates one to get an editable copy.
  */
 export function seedBuiltinScreens(): string[] {
   const db = getDb();
