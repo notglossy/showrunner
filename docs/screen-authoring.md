@@ -66,6 +66,8 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 body { user-select: none; -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
 ```
 
+It then declares the theme variables (see "Theme" below) and sets `html, body { background: var(--sr-bg); }`.
+
 `100vw × 100vh` equals the 1280 × 800 canvas. Use `px` (or `vw`/`vh`) sizing. A root layout of
 `position: fixed; inset: 0;` or `height: 100vh` is the most reliable.
 
@@ -92,7 +94,8 @@ Chromium 139 supports modern features. All of these are safe to use:
 
 ### Fonts
 
-Use only the fonts below. Nothing else is available and web fonts can't be loaded from the internet.
+Use only the fonts below, plus any extra fonts listed at the end of this guide (downloaded by the owner).
+Nothing else is available and web fonts can't be loaded from the internet.
 Always end a `font-family` list with a generic family.
 
 **Served by ShowRunner** (already declared with `@font-face` on every screen; just name them). Files are
@@ -127,6 +130,31 @@ Use `font-variant-numeric: tabular-nums;` on anything that ticks (clocks, countd
 don't shift. Oswald, Inter, Outfit, and JetBrains Mono support it; Bebas Neue digits are already
 nearly uniform width. Playfair Display uses old-style (descending) figures by default; add
 `font-variant-numeric: lining-nums tabular-nums;` for clocks and temperatures.
+
+### Theme
+
+The owner picks a theme in the dashboard. It's declared on `:root` of every screen as CSS custom
+properties. Prefer them to hardcoded colors and fonts so the screen follows the theme, and always give
+the default as the fallback so the screen still renders on its own:
+`color: var(--sr-text-muted, #c9ced8);`,
+`font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif);`.
+
+| Variable | Default | Use |
+|---|---|---|
+| `--sr-bg` | `#000000` | Page background |
+| `--sr-surface` | `#1b1b1b` | Panels, tracks, raised areas |
+| `--sr-border` | `#2a2a2a` | Dividers and outlines |
+| `--sr-text` | `#f2f2f2` | Main text |
+| `--sr-text-muted` | `#c9ced8` | Secondary text |
+| `--sr-text-faint` | `#8b8b8b` | Labels and low-priority readouts |
+| `--sr-accent` | `#6136f5` | Accent fills (bars, panels); too dark for text on the background |
+| `--sr-accent-text` | `#a995ff` | Accent on the background: text, icons, hands |
+| `--sr-font-display` | `"Space Grotesk", system-ui, sans-serif` | Big numbers and headings |
+| `--sr-font-body` | `"Space Grotesk", system-ui, sans-serif` | Everything else |
+| `--sr-font-mono` | `"JetBrains Mono", monospace` | Dates, labels, code-like readouts |
+
+The current values on this installation are listed at the end of this guide; use those as the fallbacks.
+Colors with a specific meaning (warm for heat, blue for rain) can stay literal.
 
 ## 3. Designing for across the room
 
@@ -457,6 +485,7 @@ Before a screen is done, confirm:
 
 - [ ] Output is a single fragment: `<style>`, markup, optional trailing `<script>`. No document tags.
 - [ ] No external URLs, fonts, images, scripts, or network calls. Fonts come only from section 2.
+- [ ] Colors and fonts use the theme variables (section 2, "Theme") with the default as the fallback.
 - [ ] Laid out for exactly 1280 × 800 with ≥ 48 px margins; nothing overflows.
 - [ ] Primary element ≥ 160 px; nothing smaller than 24 px; high contrast on a dark background.
 - [ ] Every data path used exists in section 6, spelled exactly.
