@@ -16,36 +16,40 @@ import { BUILTIN_SCREENS } from './screens';
 export function syncBuiltinScreens(): string[] {
   const db = getDb();
   const updated: string[] = [];
-  for (const row of db.select().from(screens).where(eq(screens.source, 'builtin')).all()) {
-    const shipped = BUILTIN_SCREENS.find((s) => s.id === row.id);
-    if (!shipped) continue;
-    if (
-      row.name === shipped.name &&
-      row.description === shipped.description &&
-      row.html === shipped.html &&
-      row.dataRefreshSeconds === shipped.dataRefreshSeconds
-    ) {
-      continue;
+  const reload: string[] = [];
+  db.transaction((tx) => {
+    for (const row of tx.select().from(screens).where(eq(screens.source, 'builtin')).all()) {
+      const shipped = BUILTIN_SCREENS.find((s) => s.id === row.id);
+      if (!shipped) continue;
+      if (
+        row.name === shipped.name &&
+        row.description === shipped.description &&
+        row.html === shipped.html &&
+        row.dataRefreshSeconds === shipped.dataRefreshSeconds
+      ) {
+        continue;
+      }
+      tx.update(screens)
+        .set({
+          name: shipped.name,
+          description: shipped.description,
+          html: shipped.html,
+          dataRefreshSeconds: shipped.dataRefreshSeconds,
+        })
+        .where(eq(screens.id, row.id))
+        .run();
+      const showing = tx
+        .select({ id: devices.id })
+        .from(devices)
+        .where(eq(devices.currentScreenId, row.id))
+        .all();
+      reload.push(...showing.map((d) => d.id));
+      updated.push(row.id);
     }
-    db.update(screens)
-      .set({
-        name: shipped.name,
-        description: shipped.description,
-        html: shipped.html,
-        dataRefreshSeconds: shipped.dataRefreshSeconds,
-      })
-      .where(eq(screens.id, row.id))
-      .run();
-    const showing = db
-      .select({ id: devices.id })
-      .from(devices)
-      .where(eq(devices.currentScreenId, row.id))
-      .all();
-    // Usually nobody is subscribed yet at startup (devices reconnect and load the fresh page); this
-    // covers calling it on a running server.
-    for (const d of showing) publish(d.id, { type: 'reload' });
-    updated.push(row.id);
-  }
+  });
+  // Published after the commit. Usually nobody is subscribed yet at startup (devices reconnect and
+  // load the fresh page); this covers calling it on a running server.
+  for (const id of reload) publish(id, { type: 'reload' });
   return updated;
 }
 

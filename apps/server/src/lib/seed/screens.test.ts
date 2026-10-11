@@ -43,6 +43,20 @@ function untokenise(html: string): string {
   return mapThemeVars(withoutDisplay, (_name, fallback) => fallback);
 }
 
+/** Selectors that gained a display-font declaration (always as the rule's first declaration). */
+const EXPECTED_DISPLAY_SELECTORS: Record<string, string[]> = {
+  'builtin-clock': ['.ck-time'],
+  'builtin-clock-weather': ['.cw-time, .cw-temp'],
+  'builtin-dial': ['.temp'],
+  'builtin-morning-brief': ['.mb-time', '.mb-temp'],
+};
+
+/** Selectors of the rules that open with a display-font declaration. */
+function displaySelectors(html: string): string[] {
+  const re = /([^{}]+)\{\s*font-family: var\(--sr-font-display,[^;]*\);/g;
+  return [...html.matchAll(re)].map((m) => (m[1] ?? '').trim());
+}
+
 describe('built-in screens', () => {
   it('includes the Default, Clock, Clock & Weather and Dial screens', () => {
     expect(BUILTIN_SCREENS.map((s) => s.id).sort()).toEqual([
@@ -89,6 +103,10 @@ describe('built-in screens', () => {
       it('is identical to the pre-theme HTML once var() wrappers and theme-only edits are undone', () => {
         const before = frozen.find((f) => f.id === screen.id);
         expect(before).toBeDefined();
+        const total = html.split('var(--sr-font-display').length - 1;
+        const selectors = displaySelectors(html);
+        expect(selectors).toEqual(EXPECTED_DISPLAY_SELECTORS[screen.id]);
+        expect(total).toBe(selectors.length);
         const restored = untokenise(html)
           .replace(
             /Colors follow the Design theme; the fallbacks are the defaults\. Change them here/g,
