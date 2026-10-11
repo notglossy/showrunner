@@ -162,6 +162,7 @@ export const UpdateSettingsRequestSchema = z
       .regex(/^\d{4,8}$/, 'PIN must be 4-8 digits')
       .nullable()
       .optional(),
+    hideBuiltinScreens: z.boolean().optional(),
   })
   .refine((obj) => Object.keys(obj).length > 0, {
     message: 'At least one field is required',

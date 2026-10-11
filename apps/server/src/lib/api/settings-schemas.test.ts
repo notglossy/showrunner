@@ -23,6 +23,8 @@ describe('settings schemas', () => {
     pass({ weatherLatitude: 51.5, weatherLongitude: -0.12 });
     pass({ weatherUnits: 'metric' });
     pass({ timezone: 'Europe/London' });
+    pass({ hideBuiltinScreens: true });
+    pass({ hideBuiltinScreens: false });
     pass({
       weatherLatitude: null,
       weatherLongitude: null,
@@ -47,6 +49,8 @@ describe('settings schemas', () => {
     fail({ timezone: '' });
     fail({ weatherLocationName: '   ' });
     fail({ weatherLocationName: 'x'.repeat(101) });
+    fail({ hideBuiltinScreens: 'true' });
+    fail({ hideBuiltinScreens: null });
   });
   it('geocode query', () => {
     expect(S.GeocodeQuerySchema.parse({ q: '  Paris ' })).toEqual({ q: 'Paris' });

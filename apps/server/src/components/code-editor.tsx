@@ -7,20 +7,25 @@ import { EditorView, keymap } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { useEffect, useRef } from 'react';
 
-/** CodeMirror 6 HTML editor. `value` is controlled: external changes (e.g. AI output) replace the document. */
+/**
+ * CodeMirror 6 HTML editor. `value` is controlled: external changes (e.g. AI output) replace the document.
+ * `height` and `readOnly` are read once at mount.
+ */
 export function CodeEditor({
   value,
   onChange,
   height = '34rem',
+  readOnly = false,
 }: {
   value: string;
   onChange: (value: string) => void;
   height?: string;
+  readOnly?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
-  const initial = useRef({ value, height });
+  const initial = useRef({ value, height, readOnly });
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -37,6 +42,8 @@ export function CodeEditor({
           keymap.of([indentWithTab]),
           html(),
           EditorView.lineWrapping,
+          EditorState.readOnly.of(initial.current.readOnly),
+          EditorView.editable.of(!initial.current.readOnly),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) onChangeRef.current(update.state.doc.toString());
           }),

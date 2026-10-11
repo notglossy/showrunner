@@ -128,7 +128,7 @@ export const deviceLogs = sqliteTable(
   (t) => [index('device_logs_device_created').on(t.deviceId, t.createdAt)],
 );
 
-/** Dashboard settings stored as JSON documents by key (currently just "overrides"). */
+/** Dashboard settings stored as JSON documents by key ("overrides", "kioskExitPin", "hideBuiltinScreens"). */
 export const settings = sqliteTable('settings', {
   key: text('key').primaryKey(),
   value: text('value', { mode: 'json' }).notNull(),

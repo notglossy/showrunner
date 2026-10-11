@@ -22,6 +22,9 @@ export function DeviceCommands({
 }) {
   const router = useRouter();
   const [screenId, setScreenId] = useState(screens[0]?.id ?? '');
+  // A live refresh can drop the chosen screen from the options (e.g. built-ins hidden in Settings);
+  // fall back to the first one so the select and "Show now" always agree.
+  const selectedId = screens.some((s) => s.id === screenId) ? screenId : (screens[0]?.id ?? '');
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +59,7 @@ export function DeviceCommands({
         <div className="flex flex-wrap gap-2">
           <select
             className={`${inputBase} min-w-48 flex-1`}
-            value={screenId}
+            value={selectedId}
             onChange={(e) => setScreenId(e.target.value)}
           >
             {screens.map((s) => (
@@ -65,7 +68,10 @@ export function DeviceCommands({
               </option>
             ))}
           </select>
-          <Button onClick={() => send({ type: 'navigate', screenId })} disabled={!screenId}>
+          <Button
+            onClick={() => send({ type: 'navigate', screenId: selectedId })}
+            disabled={!selectedId}
+          >
             Show now
           </Button>
         </div>

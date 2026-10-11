@@ -4,6 +4,7 @@ import { ScreenEditor } from '@/components/screen-editor';
 import { Badge, PageHeader } from '@/components/ui';
 import { requireAdminPage } from '@/lib/auth/session';
 import { samplePayload } from '@/lib/providers/sample';
+import { isReadOnlyScreen } from '@/lib/screens/read-only';
 import { findScreen, screenUsage } from '@/lib/screens/service';
 
 // Live state on every request; never prerender.
@@ -20,6 +21,7 @@ export default async function ScreenPage({ params }: PageProps<'/screens/[id]'>)
         title={
           <span className="flex items-center gap-2">
             {screen.name} <Badge>{screen.source}</Badge>
+            {isReadOnlyScreen(screen) && <Badge tone="amber">read-only</Badge>}
           </span>
         }
       />

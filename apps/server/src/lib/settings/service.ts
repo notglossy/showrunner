@@ -23,6 +23,7 @@ export type SettingsOverrides = Partial<KioskSettings>;
 
 const OVERRIDES_KEY = 'overrides';
 const KIOSK_PIN_KEY = 'kioskExitPin';
+const HIDE_BUILTIN_KEY = 'hideBuiltinScreens';
 
 /**
  * What devices receive to check the exit-menu PIN offline: sha256(`${salt}:${pin}`) as hex.
@@ -56,6 +57,24 @@ function setKioskPin(pin: string | null) {
     .run();
 }
 
+/** Whether the dashboard hides built-in screens from the Screens list and screen pickers. */
+export function getHideBuiltinScreens(): boolean {
+  const row = getDb().select().from(settings).where(eq(settings.key, HIDE_BUILTIN_KEY)).get();
+  return row?.value === true;
+}
+
+function setHideBuiltinScreens(hide: boolean) {
+  const db = getDb();
+  if (!hide) {
+    db.delete(settings).where(eq(settings.key, HIDE_BUILTIN_KEY)).run();
+    return;
+  }
+  db.insert(settings)
+    .values({ key: HIDE_BUILTIN_KEY, value: true })
+    .onConflictDoUpdate({ target: settings.key, set: { value: true, updatedAt: new Date() } })
+    .run();
+}
+
 /** Derives dashboard defaults from env config before overrides apply. */
 export function defaultSettings(config: Env = env()): KioskSettings {
   return {
@@ -73,12 +92,13 @@ export function getOverrides(): SettingsOverrides {
   return (row?.value as SettingsOverrides | undefined) ?? {};
 }
 
-/** Merges env defaults with stored overrides plus whether an exit PIN is set. */
+/** Merges env defaults with stored overrides, whether an exit PIN is set, and the built-in screens toggle. */
 export function getSettings(): {
   effective: KioskSettings;
   defaults: KioskSettings;
   overrides: SettingsOverrides;
   kioskExitPinSet: boolean;
+  hideBuiltinScreens: boolean;
 } {
   const defaults = defaultSettings();
   const overrides = getOverrides();
@@ -87,6 +107,7 @@ export function getSettings(): {
     defaults,
     overrides,
     kioskExitPinSet: getKioskPinHash() !== null,
+    hideBuiltinScreens: getHideBuiltinScreens(),
   };
 }
 
@@ -104,8 +125,13 @@ export function effectiveConfig(): ProviderConfig {
 }
 
 /** Applies a patch (null clears an override), drops cached provider data, and refreshes every device. */
-export function updateSettings({ kioskExitPin, ...patch }: UpdateSettingsRequest) {
+export function updateSettings({
+  kioskExitPin,
+  hideBuiltinScreens,
+  ...patch
+}: UpdateSettingsRequest) {
   if (kioskExitPin !== undefined) setKioskPin(kioskExitPin);
+  if (hideBuiltinScreens !== undefined) setHideBuiltinScreens(hideBuiltinScreens);
   const next: Record<string, unknown> = { ...getOverrides() };
   for (const [key, value] of Object.entries(patch)) {
     if (value === null) delete next[key];

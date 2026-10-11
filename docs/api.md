@@ -108,15 +108,15 @@ The last 1000 lines per device are kept.
 | `GET /api/screens` | | `{ screens }` (without `html`, with `htmlBytes`) |
 | `POST /api/screens` | `{ name, html, description?, dataRefreshSeconds?, source?: "user"\|"ai", generationPrompt? }` | 201 `{ screen }` |
 | `GET /api/screens/:id` | | `{ screen }` |
-| `PATCH /api/screens/:id` | any subset of the create fields | `{ screen }`; devices showing it reload |
-| `DELETE /api/screens/:id` | | 204, or 409 while assigned to a device or used in a playlist |
+| `PATCH /api/screens/:id` | any subset of the create fields | `{ screen }`; devices showing it reload; 403 `forbidden` for built-in screens (`source: "builtin"`, read-only; duplicate via `POST /api/screens` to get an editable copy) |
+| `DELETE /api/screens/:id` | | 204, or 409 while assigned to a device or used in a playlist; 403 `forbidden` for built-in screens (`source: "builtin"`, read-only; duplicate via `POST /api/screens` to get an editable copy) |
 | `GET /api/playlists` | | `{ playlists }` with `itemCount`, `totalSeconds` |
 | `POST /api/playlists` | `{ name, items?: [{ screenId, dwellSeconds }] }` | 201 `{ playlist }` |
 | `GET /api/playlists/:id` | | `{ playlist }` with ordered `items` |
 | `PATCH /api/playlists/:id` | `{ name?, items? }` (`items` replaces the list) | `{ playlist }`; rotation re-syncs |
 | `DELETE /api/playlists/:id` | | 204; devices using it become unassigned |
-| `GET /api/settings` | | `{ effective, defaults, overrides }` (weather location/units/name, timezone) |
-| `PATCH /api/settings` | any of `weatherLatitude, weatherLongitude, weatherUnits, weatherLocationName, timezone`, `kioskExitPin` (4-8 digits; `null` clears) | same as GET plus `kioskExitPinSet`; connected devices refresh data |
+| `GET /api/settings` | | `{ effective, defaults, overrides, kioskExitPinSet, hideBuiltinScreens }` (weather location/units/name, timezone; exit PIN set; built-in screens hidden) |
+| `PATCH /api/settings` | any of `weatherLatitude, weatherLongitude, weatherUnits, weatherLocationName, timezone`, `kioskExitPin` (4-8 digits; `null` clears), `hideBuiltinScreens` (boolean: hides built-in screens from the dashboard's Screens list and screen pickers) | same as GET; connected devices refresh data |
 | `GET /api/settings/geocode` | `?q=paris` | `{ results: [{ label, latitude, longitude, timezone }] }` (Open-Meteo geocoding) |
 | `GET /api/preview/data` | | live `kiosk.data` for a placeholder device (editor preview) |
 | `GET /api/ai/config` | | `{ configured, defaultModel, provider, models[] }` (never the key; models from the provider's `/models`) |
