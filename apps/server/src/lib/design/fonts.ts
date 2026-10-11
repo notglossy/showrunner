@@ -57,14 +57,15 @@ export function availableFontFamilies(): string[] {
 
 const upstream = (message: string) => new ApiError(502, 'upstream_failed', message);
 
+/** One stylesheet request. `axis` is e.g. `wght@400..700`, or null for the plain family. Null result = HTTP 400. */
 async function fetchCss(
   fetchFn: typeof fetch,
   family: string,
-  withAxis: boolean,
+  axis: string | null,
   deadline: AbortSignal,
 ): Promise<string | null> {
   const name = family.replace(/ /g, '+');
-  const url = `${CSS_ENDPOINT}?family=${name}${withAxis ? ':wght@100..900' : ''}&display=block`;
+  const url = `${CSS_ENDPOINT}?family=${name}${axis ? `:${axis}` : ''}&display=block`;
   try {
     const res = await fetchFn(url, {
       headers: { 'user-agent': USER_AGENT },
@@ -83,6 +84,37 @@ async function fetchCss(
     if (err instanceof ApiError) throw err;
     throw upstream('Could not reach Google Fonts');
   }
+}
+
+const WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+/**
+ * Finds the stylesheet with every weight of a family, or null if Google does not know the name.
+ * Google answers 400 for any axis range the family lacks and never says what the range is, so on
+ * a 400 we probe each weight, then ask for the variable range (lo..hi) and, failing that, the list.
+ */
+async function discoverCss(
+  fetchFn: typeof fetch,
+  family: string,
+  deadline: AbortSignal,
+): Promise<string | null> {
+  const full = await fetchCss(fetchFn, family, 'wght@100..900', deadline);
+  if (full !== null) return full;
+  // Cheap existence check so unknown names cost two requests, not ten.
+  const plain = await fetchCss(fetchFn, family, null, deadline);
+  if (plain === null) return null;
+  const probes = await Promise.all(
+    WEIGHTS.map(async (w) => ({ w, css: await fetchCss(fetchFn, family, `wght@${w}`, deadline) })),
+  );
+  const ok = probes.filter((p): p is { w: number; css: string } => p.css !== null);
+  const first = ok[0];
+  if (!first) return plain;
+  if (ok.length === 1) return first.css;
+  const lo = first.w;
+  const hi = ok[ok.length - 1]!.w;
+  const ranged = await fetchCss(fetchFn, family, `wght@${lo}..${hi}`, deadline);
+  if (ranged !== null) return ranged;
+  return fetchCss(fetchFn, family, `wght@${ok.map((p) => p.w).join(';')}`, deadline);
 }
 
 /** Reads a response body, or returns null as soon as it exceeds `max` bytes. */
@@ -181,10 +213,18 @@ export async function addGoogleFont(
     throw conflict(`${family} is already downloaded`);
 
   const deadline = AbortSignal.timeout(TOTAL_TIMEOUT_MS);
-  const css =
-    (await fetchCss(fetchFn, family, true, deadline)) ??
-    (await fetchCss(fetchFn, family, false, deadline));
-  if (css === null) throw notFound(`No Google Font named ${family}`);
+  let css = await discoverCss(fetchFn, family, deadline);
+  if (css === null) {
+    // Google family names are case-sensitive; people type "roboto slab".
+    const titled = family.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+    if (titled !== family) css = await discoverCss(fetchFn, titled, deadline);
+  }
+  if (css === null)
+    throw new ApiError(
+      404,
+      'not_found',
+      `No Google Font named "${family}". Use the exact name and capitalisation shown on fonts.google.com.`,
+    );
 
   const faces = parseLatinFaces(css);
   if (faces.length === 0) throw upstream(`Google Fonts has no Latin files for ${family}`);
