@@ -8,6 +8,8 @@ import type { CustomFont } from '@/lib/design/tokens';
 
 import { Button, Card, Empty, ErrorText, inputBase } from './ui';
 
+/** "100 900" -> "100–900" (variable range); a single weight stays as is. */
+const weightLabel = (w: string) => w.replace(' ', '–');
 const kb = (bytes: number) => Math.max(1, Math.round(bytes / 1024));
 
 export function DesignFonts({ fonts }: { fonts: CustomFont[] }) {
@@ -62,7 +64,8 @@ export function DesignFonts({ fonts }: { fonts: CustomFont[] }) {
       </p>
       <form onSubmit={(e) => void add(e)} className="mb-3 flex gap-2">
         <input
-          className={`${inputBase} min-w-0 flex-1`}
+          // ! beats the darker placeholder colour baked into inputBase.
+          className={`${inputBase} placeholder:!text-concrete min-w-0 flex-1`}
           value={family}
           maxLength={64}
           placeholder="e.g. Roboto Slab"
@@ -89,8 +92,7 @@ export function DesignFonts({ fonts }: { fonts: CustomFont[] }) {
                   {f.family}
                 </p>
                 <p className="text-subtle text-xs">
-                  Weights {f.files.map((x) => x.weight.replace(' ', '–')).join(', ')} ·{' '}
-                  {kb(f.bytes)} KB
+                  Weights {f.files.map((x) => weightLabel(x.weight)).join(', ')} · {kb(f.bytes)} KB
                 </p>
               </div>
               <Button
