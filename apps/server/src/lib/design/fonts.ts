@@ -29,8 +29,10 @@ const USER_AGENT =
 /** Folder the downloaded font files live in: FONTS_DIR, or `fonts/` next to the database. */
 function fontsDir(): string {
   const e = env();
+  // Runtime data directory (FONTS_DIR or next to the database): keep it out of build tracing.
   return path.resolve(
-    e.FONTS_DIR ?? path.join(path.dirname(path.resolve(e.DATABASE_PATH)), 'fonts'),
+    /*turbopackIgnore: true*/ e.FONTS_DIR ??
+      path.join(path.dirname(path.resolve(e.DATABASE_PATH)), 'fonts'),
   );
 }
 
