@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, ApiClientError } from '@/lib/client/api';
 import type { Screen } from '@/lib/db/schema';
 import type { KioskDataPayload } from '@/lib/providers/payload';
+import { buildDuplicateScreenInput } from '@/lib/screens/duplicate';
 
 import { AiPanel, type AiResult } from './ai-panel';
 import { CodeEditor } from './code-editor';
@@ -20,6 +21,7 @@ export interface EditableScreen {
   html: string;
   dataRefreshSeconds: number;
   source: Screen['source'];
+  generationPrompt: string | null;
 }
 
 export interface ScreenUsage {
@@ -127,6 +129,24 @@ export function ScreenEditor({
     }
   }
 
+  async function duplicate() {
+    if (!draft.id) return;
+    setPending(true);
+    setError(null);
+    try {
+      // Copies the visible draft (including unsaved edits), not the saved row.
+      const { screen: copy } = await api<{ screen: Screen }>('/api/screens', {
+        method: 'POST',
+        body: buildDuplicateScreenInput(draft, { savedName: saved.name, aiPrompt }),
+      });
+      router.push(`/screens/${copy.id}`);
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.detail : String(err));
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
@@ -157,6 +177,11 @@ export function ScreenEditor({
         </Field>
         <div className="flex items-center gap-2 pb-0.5">
           {dirty && <Badge tone="amber">Unsaved</Badge>}
+          {draft.id && (
+            <Button onClick={duplicate} disabled={pending}>
+              Duplicate
+            </Button>
+          )}
           <Button
             variant="primary"
             onClick={save}

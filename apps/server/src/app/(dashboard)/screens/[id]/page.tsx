@@ -32,6 +32,7 @@ export default async function ScreenPage({ params }: PageProps<'/screens/[id]'>)
           html: screen.html,
           dataRefreshSeconds: screen.dataRefreshSeconds,
           source: screen.source,
+          generationPrompt: screen.generationPrompt,
         }}
         sampleData={samplePayload()}
         usage={screenUsage(screen.id)}
