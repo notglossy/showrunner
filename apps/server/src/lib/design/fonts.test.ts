@@ -303,6 +303,28 @@ describe('addGoogleFont', () => {
     await rejects(addGoogleFont('ROBOTO SLAB', { fetch: fn }), 409);
   });
 
+  it('never stores an unsafe family name reported by the stylesheet', async () => {
+    // U+212A KELVIN SIGN lower-cases to "k", so a case-insensitive match alone would accept it.
+    for (const reported of ['Roboto Slab</style>', 'Roboto Slab;}', 'Robo\u212Ao Slab']) {
+      const typed = reported.includes('\u212A') ? 'roboko slab' : 'roboto slab';
+      const css = face('latin', '400', `${GSTATIC}a.woff2`).replace(
+        "'Roboto Slab'",
+        `'${reported}'`,
+      );
+      const { fn } = fakeFetch({
+        [cssUrl(typed, true)]: { body: css },
+        [`${GSTATIC}a.woff2`]: { body: woff2('a') },
+      });
+      // Either the face is unparseable (502) or the typed, validated name is kept.
+      const font = await addGoogleFont(typed, { fetch: fn }).catch(() => null);
+      if (font) {
+        expect(font.family).toBe(typed);
+        deleteCustomFont(typed);
+      }
+      expect(listCustomFonts().map((f) => f.family)).not.toContain(reported);
+    }
+  });
+
   it('rejects a file without the woff2 magic bytes', async () => {
     const { fn } = fakeFetch({
       [cssUrl('Roboto Slab', true)]: { body: face('latin', '400', `${GSTATIC}a.woff2`) },

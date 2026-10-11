@@ -37,6 +37,8 @@ function fontsDir(): string {
 }
 
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+// Same charset as AddFontRequestSchema: the name lands in CSS, the theme and the AI prompt.
+const SAFE_FAMILY = /^[A-Za-z0-9]+( [A-Za-z0-9]+)*$/;
 
 /** Downloaded fonts, oldest first. */
 export function listCustomFonts(): CustomFont[] {
@@ -105,9 +107,12 @@ async function discoverCss(
   // Cheap existence check so unknown names cost two requests, not ten.
   const plain = await fetchCss(fetchFn, family, null, deadline);
   if (plain === null) return null;
+  // One failed probe aborts the rest instead of leaving them running until their timeouts.
+  const stop = new AbortController();
+  const signal = AbortSignal.any([deadline, stop.signal]);
   const probes = await Promise.all(
-    WEIGHTS.map(async (w) => ({ w, css: await fetchCss(fetchFn, family, `wght@${w}`, deadline) })),
-  );
+    WEIGHTS.map(async (w) => ({ w, css: await fetchCss(fetchFn, family, `wght@${w}`, signal) })),
+  ).finally(() => stop.abort());
   const ok = probes.filter((p): p is { w: number; css: string } => p.css !== null);
   const first = ok[0];
   if (!first) return plain;
@@ -231,7 +236,9 @@ export async function addGoogleFont(
   const faces = parseLatinFaces(css);
   if (faces.length === 0) throw upstream(`Google Fonts has no Latin files for ${family}`);
   // Google reports the canonical casing ("Roboto Slab" for "roboto slab").
-  const canonical = faces.find((f) => f.family && same(f.family, family))?.family ?? family;
+  // Only a case change of the typed (already validated) name is accepted.
+  const reported = faces.find((f) => f.family && same(f.family, family))?.family;
+  const canonical = reported && SAFE_FAMILY.test(reported) ? reported : family;
 
   const files: CustomFont['files'] = [];
   const buffers = new Map<string, Buffer>();
