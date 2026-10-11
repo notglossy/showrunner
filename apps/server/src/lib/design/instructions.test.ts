@@ -4,7 +4,9 @@ import path from 'node:path';
 
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { systemPrompt } from '@/lib/ai/prompt';
+import { AGENT_INSTRUCTIONS_KEY, systemPrompt } from '@/lib/ai/prompt';
+import { getDb } from '@/lib/db/client';
+import { settings } from '@/lib/db/schema';
 import { resetEnv } from '@/lib/env';
 
 import { getInstructions, resetInstructions, updateInstructions } from './instructions';
@@ -60,6 +62,16 @@ describe('instructions', () => {
     const state = updateInstructions('# Guide v1\r\n');
     expect(state.customised).toBe(false);
     expect(state.text).toBe('# Guide v1\n');
+  });
+
+  it('treats a malformed stored row as not customised', () => {
+    getDb()
+      .insert(settings)
+      .values({ key: AGENT_INSTRUCTIONS_KEY, value: { baseHash: 'x' } })
+      .run();
+    expect(getInstructions()).toMatchObject({ customised: false, text: '# Guide v1\n' });
+    expect(systemPrompt().startsWith('# Guide v1')).toBe(true);
+    expect(updateInstructions('fixed').customised).toBe(true);
   });
 
   it('resets to the doc', () => {

@@ -6,7 +6,8 @@ import { getInstructions, resetInstructions, updateInstructions } from '@/lib/de
 // Live state on every request; never prerender.
 export const dynamic = 'force-dynamic';
 
-const MAX_BODY = 250 * 1024;
+// Bytes: must fit 200k chars of multi-byte UTF-8 plus JSON escaping.
+const MAX_BODY = 800 * 1024;
 
 export const GET = route(async (req) => {
   requireAdmin(req);

@@ -27,9 +27,8 @@ export function DesignInstructions({ state }: { state: InstructionsState }) {
     setError(null);
     setPending(true);
     try {
-      const next = await fn();
-      setSeen(next.text);
-      setText(next.text);
+      await fn();
+      // The render-time sync adopts the refreshed `state` prop.
       setConfirmReset(false);
       router.refresh();
     } catch (err) {

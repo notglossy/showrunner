@@ -46,7 +46,8 @@ export const AGENT_INSTRUCTIONS_KEY = 'agentInstructions';
 // Read here rather than via lib/design/instructions, which imports authoringDoc from this file.
 function storedInstructionsText(): string | undefined {
   const row = getDb().select().from(settings).where(eq(settings.key, AGENT_INSTRUCTIONS_KEY)).get();
-  return (row?.value as { text?: string } | undefined)?.text;
+  const text = (row?.value as { text?: unknown } | undefined)?.text;
+  return typeof text === 'string' ? text : undefined;
 }
 
 const cell = (value: string) => value.replaceAll('|', '\\|');

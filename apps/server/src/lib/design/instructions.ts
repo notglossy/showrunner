@@ -18,7 +18,11 @@ const normalise = (text: string) => text.replaceAll('\r\n', '\n');
 
 function stored(): StoredInstructions | undefined {
   const row = getDb().select().from(settings).where(eq(settings.key, AGENT_INSTRUCTIONS_KEY)).get();
-  return row?.value as StoredInstructions | undefined;
+  const value = row?.value as Partial<StoredInstructions> | null | undefined;
+  // A malformed row counts as not customised.
+  return typeof value?.text === 'string' && typeof value.baseHash === 'string'
+    ? (value as StoredInstructions)
+    : undefined;
 }
 
 /** The AI's authoring guide: the owner's version, or docs/screen-authoring.md. */
