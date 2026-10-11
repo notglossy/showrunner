@@ -5,7 +5,13 @@ import { describe, expect, it } from 'vitest';
 import { registerDevice } from '@/lib/devices/service';
 import { type KioskEvent, subscribe } from '@/lib/events/bus';
 
-import { defaultSettings, effectiveConfig, getSettings, updateSettings } from './service';
+import {
+  defaultSettings,
+  effectiveConfig,
+  getHideBuiltinScreens,
+  getSettings,
+  updateSettings,
+} from './service';
 
 describe('settings', () => {
   it('defaults to env values with no overrides', () => {
@@ -56,5 +62,20 @@ describe('settings', () => {
     expect(cleared.effective.timezone).toBe('America/Los_Angeles');
     expect(cleared.effective.weatherUnits).toBe('imperial');
     off();
+  });
+
+  it('stores hideBuiltinScreens separately from env overrides', () => {
+    const before = getSettings();
+    expect(before.hideBuiltinScreens).toBe(false);
+
+    const hidden = updateSettings({ hideBuiltinScreens: true });
+    expect(hidden.hideBuiltinScreens).toBe(true);
+    expect(getSettings().hideBuiltinScreens).toBe(true);
+    expect(hidden.overrides).toEqual(before.overrides);
+    expect(hidden.overrides).not.toHaveProperty('hideBuiltinScreens');
+    expect(hidden.effective).not.toHaveProperty('hideBuiltinScreens');
+
+    expect(updateSettings({ hideBuiltinScreens: false }).hideBuiltinScreens).toBe(false);
+    expect(getHideBuiltinScreens()).toBe(false);
   });
 });

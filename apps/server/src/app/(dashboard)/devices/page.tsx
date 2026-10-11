@@ -13,6 +13,8 @@ import { registrationStatus } from '@/lib/devices/registration';
 import { listDevices, toDeviceView } from '@/lib/devices/service';
 import { listPlaylists } from '@/lib/playlists/service';
 import { listScreens } from '@/lib/screens/service';
+import { visibleScreens } from '@/lib/screens/visible';
+import { getHideBuiltinScreens } from '@/lib/settings/service';
 
 // Live state on every request; never prerender.
 export const dynamic = 'force-dynamic';
@@ -20,9 +22,10 @@ export const dynamic = 'force-dynamic';
 export default async function DevicesPage() {
   await requireAdminPage('/devices');
   const devices = listDevices().map((d) => toDeviceView(d));
-  const screens = listScreens().map(({ id, name }) => ({ id, name }));
+  const allScreens = listScreens().map(({ id, name, source }) => ({ id, name, source }));
+  const hide = getHideBuiltinScreens();
   const playlists = listPlaylists().map(({ id, name }) => ({ id, name }));
-  const screenName = new Map(screens.map((s) => [s.id, s.name]));
+  const screenName = new Map(allScreens.map((s) => [s.id, s.name]));
   const unclaimed = devices.filter((d) => !d.claimed);
   const claimed = devices.filter((d) => d.claimed);
 
@@ -112,7 +115,11 @@ export default async function DevicesPage() {
                       <AssignmentSelect
                         deviceId={d.id}
                         assignment={d.assignment}
-                        screens={screens}
+                        screens={visibleScreens(
+                          allScreens,
+                          hide,
+                          d.assignment.type === 'screen' ? [d.assignment.screenId] : [],
+                        )}
                         playlists={playlists}
                       />
                     </td>

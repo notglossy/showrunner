@@ -6,7 +6,9 @@ sample weather for Los Angeles.
 
 ## Built-in screens
 
-These ship with ShowRunner and are already in your dashboard (they're seeded on first start).
+These ship with ShowRunner and are already in your dashboard (they're seeded on first start). They're
+read-only there: duplicate one in the screen editor to make an editable copy, or hide them all under
+**Settings → Built-in screens**.
 
 | | Screen | What it shows |
 |---|---|---|

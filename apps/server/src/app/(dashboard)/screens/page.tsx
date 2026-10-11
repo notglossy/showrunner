@@ -4,14 +4,20 @@ import { TimeAgo } from '@/components/time-ago';
 import { Badge, Empty, PageHeader } from '@/components/ui';
 import { requireAdminPage } from '@/lib/auth/session';
 import { bytes } from '@/lib/client/format';
+import { isReadOnlyScreen } from '@/lib/screens/read-only';
 import { listScreens, screenUsage } from '@/lib/screens/service';
+import { visibleScreens } from '@/lib/screens/visible';
+import { getHideBuiltinScreens } from '@/lib/settings/service';
 
 // Live state on every request; never prerender.
 export const dynamic = 'force-dynamic';
 
 export default async function ScreensPage() {
   await requireAdminPage('/screens');
-  const screens = listScreens().map((s) => {
+  const all = listScreens();
+  const shown = visibleScreens(all, getHideBuiltinScreens());
+  const hidden = all.length - shown.length;
+  const screens = shown.map((s) => {
     const usage = screenUsage(s.id);
     return { ...s, used: usage.devices.length + usage.playlists.length };
   });
@@ -25,6 +31,15 @@ export default async function ScreensPage() {
           New screen
         </Link>
       </PageHeader>
+      {hidden > 0 && (
+        <p className="text-subtle mb-3 text-sm">
+          {hidden} built-in {hidden === 1 ? 'screen' : 'screens'} hidden. Show them in{' '}
+          <Link href="/settings" className="text-ink underline underline-offset-2">
+            Settings
+          </Link>
+          .
+        </p>
+      )}
       {screens.length === 0 ? (
         <Empty>No screens yet.</Empty>
       ) : (
@@ -51,11 +66,14 @@ export default async function ScreensPage() {
                   {s.description && <div className="text-subtle text-xs">{s.description}</div>}
                 </td>
                 <td className="py-2.5 pr-3">
-                  <Badge
-                    tone={s.source === 'ai' ? 'blue' : s.source === 'builtin' ? 'gray' : 'green'}
-                  >
-                    {s.source}
-                  </Badge>
+                  <span className="flex items-center gap-1.5">
+                    <Badge
+                      tone={s.source === 'ai' ? 'blue' : s.source === 'builtin' ? 'gray' : 'green'}
+                    >
+                      {s.source}
+                    </Badge>
+                    {isReadOnlyScreen(s) && <Badge tone="amber">read-only</Badge>}
+                  </span>
                 </td>
                 <td className="text-subtle py-2.5 pr-3">{bytes(s.htmlBytes)}</td>
                 <td className="text-subtle py-2.5 pr-3">{s.used || '—'}</td>

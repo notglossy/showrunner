@@ -7,6 +7,8 @@ import { requireAdminPage } from '@/lib/auth/session';
 import { listDevices } from '@/lib/devices/service';
 import { getPlaylistOr404 } from '@/lib/playlists/service';
 import { listScreens } from '@/lib/screens/service';
+import { visibleScreens } from '@/lib/screens/visible';
+import { getHideBuiltinScreens } from '@/lib/settings/service';
 
 // Live state on every request; never prerender.
 export const dynamic = 'force-dynamic';
@@ -21,7 +23,11 @@ export default async function PlaylistPage({ params }: PageProps<'/playlists/[id
     if (err instanceof ApiError && err.status === 404) notFound();
     throw err;
   }
-  const screens = listScreens().map(({ id, name }) => ({ id, name }));
+  const screens = visibleScreens(
+    listScreens().map(({ id, name, source }) => ({ id, name, source })),
+    getHideBuiltinScreens(),
+    playlist.items.map((i) => i.screenId),
+  );
   const devices = listDevices()
     .filter((d) => d.playlistId === id)
     .map((d) => ({ id: d.id, name: d.name }));

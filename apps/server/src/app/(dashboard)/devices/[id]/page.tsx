@@ -15,6 +15,8 @@ import { findDevice, toDeviceView } from '@/lib/devices/service';
 import { getPlaylistOr404, listPlaylists } from '@/lib/playlists/service';
 import { wifiBars } from '@/lib/providers/device';
 import { listScreens } from '@/lib/screens/service';
+import { visibleScreens } from '@/lib/screens/visible';
+import { getHideBuiltinScreens } from '@/lib/settings/service';
 
 // Live state on every request; never prerender.
 export const dynamic = 'force-dynamic';
@@ -34,9 +36,10 @@ export default async function DevicePage({ params }: PageProps<'/devices/[id]'>)
   const row = findDevice(id);
   if (!row) notFound();
   const device = toDeviceView(row);
-  const screens = listScreens().map(({ id, name }) => ({ id, name }));
+  const allScreens = listScreens().map(({ id, name, source }) => ({ id, name, source }));
+  const hide = getHideBuiltinScreens();
   const playlists = listPlaylists().map(({ id, name }) => ({ id, name }));
-  const screenNames = Object.fromEntries(screens.map((s) => [s.id, s.name]));
+  const screenNames = Object.fromEntries(allScreens.map((s) => [s.id, s.name]));
   const playlist =
     device.assignment.type === 'playlist' ? getPlaylistOr404(device.assignment.playlistId) : null;
   const { battery, wifi, uptimeSeconds, kioskMode, isDefaultHome } = device.status;
@@ -130,14 +133,18 @@ export default async function DevicePage({ params }: PageProps<'/devices/[id]'>)
                 <AssignmentSelect
                   deviceId={device.id}
                   assignment={device.assignment}
-                  screens={screens}
+                  screens={visibleScreens(
+                    allScreens,
+                    hide,
+                    device.assignment.type === 'screen' ? [device.assignment.screenId] : [],
+                  )}
                   playlists={playlists}
                 />
               </Card>
               <Card title="Commands">
                 <DeviceCommands
                   deviceId={device.id}
-                  screens={screens}
+                  screens={visibleScreens(allScreens, hide)}
                   claimed={device.claimed}
                   strict={kioskMode === 'strict'}
                 />

@@ -178,6 +178,8 @@ export interface UpdateSettingsRequest {
   timezone?: string | null;
   /** PIN for the on-device kiosk exit menu: 4-8 digits, or null to remove it (menu opens without a PIN). */
   kioskExitPin?: string | null;
+  /** Hide the screens that ship with ShowRunner from the dashboard's Screens list and screen pickers (default false). */
+  hideBuiltinScreens?: boolean;
 }
 
 export interface GeocodeQuery {
