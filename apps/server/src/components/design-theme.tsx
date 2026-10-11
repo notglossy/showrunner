@@ -35,6 +35,8 @@ export function DesignTheme({ state }: { state: ThemeState }) {
   const [saved, setSaved] = useState<Theme>(state.effective);
   const [colors, setColors] = useState<Record<ThemeColorKey, string>>(state.effective.colors);
   const [fonts, setFonts] = useState<Record<ThemeFontKey, string>>(state.effective.fonts);
+  // Last valid hex per color, so the swatch holds still while the text box is mid-edit.
+  const [lastValid, setLastValid] = useState<Record<ThemeColorKey, string>>(state.effective.colors);
   const [fontList, setFontList] = useState<string[]>(state.availableFonts);
   const [pending, setPending] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -54,6 +56,7 @@ export function DesignTheme({ state }: { state: ThemeState }) {
   function adopt(next: ThemeState) {
     setSaved(next.effective);
     setColors(next.effective.colors);
+    setLastValid(next.effective.colors);
     setFonts(next.effective.fonts);
     setFontList(next.availableFonts);
   }
@@ -133,10 +136,11 @@ export function DesignTheme({ state }: { state: ThemeState }) {
                         type="color"
                         aria-label={`${t.label} color`}
                         className="border-ink h-10 w-12 shrink-0 cursor-pointer rounded border bg-white p-1"
-                        value={ok ? value.toLowerCase() : t.default}
+                        value={(ok ? value : lastValid[t.key]).toLowerCase()}
                         disabled={pending}
                         onChange={(e) => {
                           setColors((p) => ({ ...p, [t.key]: e.target.value }));
+                          setLastValid((p) => ({ ...p, [t.key]: e.target.value }));
                           touch();
                         }}
                       />
@@ -144,17 +148,25 @@ export function DesignTheme({ state }: { state: ThemeState }) {
                         type="text"
                         aria-label={`${t.label} hex`}
                         aria-invalid={!ok}
+                        aria-describedby={ok ? undefined : `hex-hint-${t.key}`}
                         spellCheck={false}
                         maxLength={7}
                         className={`${inputBase} min-w-0 flex-1 font-mono ${ok ? '' : 'border-danger'}`}
                         value={value}
                         disabled={pending}
                         onChange={(e) => {
-                          setColors((p) => ({ ...p, [t.key]: e.target.value.trim() }));
+                          const next = e.target.value.trim();
+                          setColors((p) => ({ ...p, [t.key]: next }));
+                          if (HEX.test(next)) setLastValid((p) => ({ ...p, [t.key]: next }));
                           touch();
                         }}
                       />
                     </div>
+                    {!ok && (
+                      <span id={`hex-hint-${t.key}`} className="text-danger text-xs">
+                        Use #rrggbb
+                      </span>
+                    )}
                     <code className="text-subtle font-mono text-xs">{t.cssVar}</code>
                   </div>
                 );

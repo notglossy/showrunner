@@ -84,6 +84,29 @@ describe('theme service', () => {
     expect(state.overrides.fonts).toEqual({ display: 'Lobster' });
   });
 
+  it('ignores invalid stored data in effective so themeCss never throws', () => {
+    getDb()
+      .insert(settings)
+      .values({
+        key: 'theme',
+        value: { colors: { bg: 'red;}', accent: '#ABCDEF' }, fonts: { body: 'X";}' } },
+      })
+      .run();
+    const { effective } = getTheme();
+    expect(effective.colors.bg).toBe(DEFAULT_THEME.colors.bg);
+    expect(effective.colors.accent).toBe('#ABCDEF');
+    expect(effective.fonts.body).toBe(DEFAULT_THEME.fonts.body);
+    expect(() => themeCss(effective)).not.toThrow();
+  });
+
+  it('does not write or reload when the patch changes nothing', () => {
+    updateTheme({ colors: { accent: '#ff8800' } });
+    vi.mocked(reloadAllDevices).mockClear();
+    updateTheme({ colors: { accent: '#FF8800', bg: null } });
+    expect(reloadAllDevices).not.toHaveBeenCalled();
+    expect(storedRow()?.value).toEqual({ colors: { accent: '#ff8800' } });
+  });
+
   it('resets everything and reloads devices', () => {
     updateTheme({ colors: { accent: '#ff8800' }, fonts: { display: 'Oswald' } });
     vi.mocked(reloadAllDevices).mockClear();

@@ -40,13 +40,18 @@ export function getTheme(): ThemeState {
   const overrides = readOverrides();
   const availableFonts = availableFontFamilies();
   const effective: Theme = {
-    colors: { ...DEFAULT_THEME.colors, ...overrides.colors },
+    colors: { ...DEFAULT_THEME.colors },
     fonts: { ...DEFAULT_THEME.fonts },
   };
-  // A deleted font silently falls back to the default instead of breaking the page.
+  // Invalid stored data (hand-edited row, deleted font) falls back to the default so designCss() never throws.
+  for (const token of THEME_COLORS) {
+    const hex = overrides.colors?.[token.key];
+    if (typeof hex === 'string' && /^#[0-9a-f]{6}$/i.test(hex)) effective.colors[token.key] = hex;
+  }
   for (const token of THEME_FONTS) {
     const family = overrides.fonts?.[token.key];
-    if (family && availableFonts.includes(family)) effective.fonts[token.key] = family;
+    if (typeof family === 'string' && !/["<>;{}\\]/.test(family) && availableFonts.includes(family))
+      effective.fonts[token.key] = family;
   }
   return { effective, defaults: DEFAULT_THEME, overrides, availableFonts };
 }
@@ -78,6 +83,7 @@ export function updateTheme(patch: UpdateThemeRequest): ThemeState {
   const next: ThemeOverrides = {};
   if (Object.keys(colors).length) next.colors = colors;
   if (Object.keys(fonts).length) next.fonts = fonts;
+  if (JSON.stringify(next) === JSON.stringify(stored)) return getTheme();
   writeOverrides(next);
   reloadAllDevices();
   return getTheme();
