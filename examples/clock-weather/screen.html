@@ -1,31 +1,31 @@
 <style>
-  /* Colors. Change them here to restyle the screen. */
+  /* Colors follow the Design theme; the fallbacks are the defaults. Change them here to restyle the screen. */
   :root {
-    --cw-accent: #a995ff; /* weather icons and the date */
+    --cw-accent: var(--sr-accent-text, #a995ff); /* weather icons and the date */
   }
-  .cw-root { position: fixed; inset: 0; padding: 56px 64px 48px; background: #000; color: #f2f2f2; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500; display: flex; flex-direction: column; }
-  .cw-mono { font-family: "JetBrains Mono", monospace; font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
+  .cw-root { position: fixed; inset: 0; padding: 56px 64px 48px; background: var(--sr-bg, #000); color: var(--sr-text, #f2f2f2); font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif); font-weight: 500; display: flex; flex-direction: column; }
+  .cw-mono { font-family: var(--sr-font-mono, "JetBrains Mono", monospace); font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
   /* Two columns sharing rows, so the time and the temperature sit on one line. */
   .cw-top { display: grid; grid-template-columns: auto auto; justify-content: space-between; column-gap: 48px; row-gap: 16px; }
   .cw-right { text-align: right; justify-self: end; }
   .cw-date { font-size: 26px; color: var(--cw-accent); align-self: end; }
-  .cw-place { font-size: 22px; color: #8b8b8b; align-self: end; max-width: 460px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cw-place { font-size: 22px; color: var(--sr-text-faint, #8b8b8b); align-self: end; max-width: 460px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cw-big { display: flex; align-items: flex-start; }
-  .cw-time, .cw-temp { font-size: 170px; line-height: 0.88; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
-  .cw-ampm, .cw-unit { font-size: 40px; color: #8b8b8b; margin: 12px 0 0 12px; }
-  .cw-greeting { font-size: 32px; color: #c9ced8; }
+  .cw-time, .cw-temp { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 170px; line-height: 0.88; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .cw-ampm, .cw-unit { font-size: 40px; color: var(--sr-text-faint, #8b8b8b); margin: 12px 0 0 12px; }
+  .cw-greeting { font-size: 32px; color: var(--sr-text-muted, #c9ced8); }
   .cw-now { display: flex; align-items: center; justify-content: flex-end; gap: 14px; font-size: 32px; }
   .cw-nowicon { width: 40px; height: 40px; color: var(--cw-accent); display: block; }
-  .cw-hilo { font-size: 22px; margin-top: 8px; color: #8b8b8b; font-variant-numeric: tabular-nums; }
-  .cw-band { margin-top: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid #2a2a2a; }
-  .cw-day { padding: 24px 20px 0; border-left: 1px solid #2a2a2a; min-width: 0; }
+  .cw-hilo { font-size: 22px; margin-top: 8px; color: var(--sr-text-faint, #8b8b8b); font-variant-numeric: tabular-nums; }
+  .cw-band { margin-top: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--sr-border, #2a2a2a); }
+  .cw-day { padding: 24px 20px 0; border-left: 1px solid var(--sr-border, #2a2a2a); min-width: 0; }
   .cw-day:first-child { border-left: 0; padding-left: 0; }
-  .cw-name { font-size: 24px; color: #8b8b8b; }
+  .cw-name { font-size: 24px; color: var(--sr-text-faint, #8b8b8b); }
   .cw-icon { display: block; width: 72px; height: 72px; margin: 18px 0 16px; color: var(--cw-accent); }
   .cw-temps { font-size: 34px; font-variant-numeric: tabular-nums; }
-  .cw-low { color: #8b8b8b; margin-left: 12px; }
-  .cw-rain { font-size: 18px; color: #8b8b8b; margin-top: 6px; min-height: 24px; }
-  .cw-empty { grid-column: 1 / -1; font-size: 28px; color: #8b8b8b; padding: 32px 0; }
+  .cw-low { color: var(--sr-text-faint, #8b8b8b); margin-left: 12px; }
+  .cw-rain { font-size: 18px; color: var(--sr-text-faint, #8b8b8b); margin-top: 6px; min-height: 24px; }
+  .cw-empty { grid-column: 1 / -1; font-size: 28px; color: var(--sr-text-faint, #8b8b8b); padding: 32px 0; }
 </style>
 <main class="cw-root">
   <div class="cw-top">

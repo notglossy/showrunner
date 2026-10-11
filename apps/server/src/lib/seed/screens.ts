@@ -13,19 +13,19 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     description: 'Large clock with the date, a greeting and a bar that fills each minute.',
     dataRefreshSeconds: 300,
     html: `<style>
-  /* Colors. Change them here to restyle the screen. */
+  /* Colors follow the Design theme; the fallbacks are the defaults. Change them here to restyle the screen. */
   :root {
-    --ck-accent: #6136f5; /* seconds bar */
-    --ck-accent-text: #a995ff; /* date; a lighter tint so it stays readable on black */
+    --ck-accent: var(--sr-accent, #6136f5); /* seconds bar */
+    --ck-accent-text: var(--sr-accent-text, #a995ff); /* date; a lighter tint so it stays readable on black */
   }
-  .ck-root { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #f2f2f2; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500; text-align: center; }
-  .ck-mono { font-family: "JetBrains Mono", monospace; font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
+  .ck-root { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--sr-bg, #000); color: var(--sr-text, #f2f2f2); font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif); font-weight: 500; text-align: center; }
+  .ck-mono { font-family: var(--sr-font-mono, "JetBrains Mono", monospace); font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
   .ck-date { font-size: 30px; color: var(--ck-accent-text); }
   .ck-row { display: flex; align-items: flex-start; margin: 20px 0 12px; }
-  .ck-time { font-size: 300px; line-height: 0.9; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
-  .ck-ampm { font-size: 48px; color: #8b8b8b; margin: 24px 0 0 20px; }
-  .ck-greeting { font-size: 40px; color: #c9ced8; }
-  .ck-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: #1b1b1b; }
+  .ck-time { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 300px; line-height: 0.9; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .ck-ampm { font-size: 48px; color: var(--sr-text-faint, #8b8b8b); margin: 24px 0 0 20px; }
+  .ck-greeting { font-size: 40px; color: var(--sr-text-muted, #c9ced8); }
+  .ck-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: var(--sr-surface, #1b1b1b); }
   .ck-fill { height: 100%; background: var(--ck-accent); transform: scaleX(0); transform-origin: left; transition: transform 1s linear; }
 </style>
 <main class="ck-root">
@@ -50,33 +50,33 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     description: 'Clock and current conditions side by side, with a 5-day forecast in line icons.',
     dataRefreshSeconds: 60,
     html: `<style>
-  /* Colors. Change them here to restyle the screen. */
+  /* Colors follow the Design theme; the fallbacks are the defaults. Change them here to restyle the screen. */
   :root {
-    --cw-accent: #a995ff; /* weather icons and the date */
+    --cw-accent: var(--sr-accent-text, #a995ff); /* weather icons and the date */
   }
-  .cw-root { position: fixed; inset: 0; padding: 56px 64px 48px; background: #000; color: #f2f2f2; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500; display: flex; flex-direction: column; }
-  .cw-mono { font-family: "JetBrains Mono", monospace; font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
+  .cw-root { position: fixed; inset: 0; padding: 56px 64px 48px; background: var(--sr-bg, #000); color: var(--sr-text, #f2f2f2); font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif); font-weight: 500; display: flex; flex-direction: column; }
+  .cw-mono { font-family: var(--sr-font-mono, "JetBrains Mono", monospace); font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
   /* Two columns sharing rows, so the time and the temperature sit on one line. */
   .cw-top { display: grid; grid-template-columns: auto auto; justify-content: space-between; column-gap: 48px; row-gap: 16px; }
   .cw-right { text-align: right; justify-self: end; }
   .cw-date { font-size: 26px; color: var(--cw-accent); align-self: end; }
-  .cw-place { font-size: 22px; color: #8b8b8b; align-self: end; max-width: 460px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cw-place { font-size: 22px; color: var(--sr-text-faint, #8b8b8b); align-self: end; max-width: 460px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cw-big { display: flex; align-items: flex-start; }
-  .cw-time, .cw-temp { font-size: 170px; line-height: 0.88; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
-  .cw-ampm, .cw-unit { font-size: 40px; color: #8b8b8b; margin: 12px 0 0 12px; }
-  .cw-greeting { font-size: 32px; color: #c9ced8; }
+  .cw-time, .cw-temp { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 170px; line-height: 0.88; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .cw-ampm, .cw-unit { font-size: 40px; color: var(--sr-text-faint, #8b8b8b); margin: 12px 0 0 12px; }
+  .cw-greeting { font-size: 32px; color: var(--sr-text-muted, #c9ced8); }
   .cw-now { display: flex; align-items: center; justify-content: flex-end; gap: 14px; font-size: 32px; }
   .cw-nowicon { width: 40px; height: 40px; color: var(--cw-accent); display: block; }
-  .cw-hilo { font-size: 22px; margin-top: 8px; color: #8b8b8b; font-variant-numeric: tabular-nums; }
-  .cw-band { margin-top: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid #2a2a2a; }
-  .cw-day { padding: 24px 20px 0; border-left: 1px solid #2a2a2a; min-width: 0; }
+  .cw-hilo { font-size: 22px; margin-top: 8px; color: var(--sr-text-faint, #8b8b8b); font-variant-numeric: tabular-nums; }
+  .cw-band { margin-top: auto; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--sr-border, #2a2a2a); }
+  .cw-day { padding: 24px 20px 0; border-left: 1px solid var(--sr-border, #2a2a2a); min-width: 0; }
   .cw-day:first-child { border-left: 0; padding-left: 0; }
-  .cw-name { font-size: 24px; color: #8b8b8b; }
+  .cw-name { font-size: 24px; color: var(--sr-text-faint, #8b8b8b); }
   .cw-icon { display: block; width: 72px; height: 72px; margin: 18px 0 16px; color: var(--cw-accent); }
   .cw-temps { font-size: 34px; font-variant-numeric: tabular-nums; }
-  .cw-low { color: #8b8b8b; margin-left: 12px; }
-  .cw-rain { font-size: 18px; color: #8b8b8b; margin-top: 6px; min-height: 24px; }
-  .cw-empty { grid-column: 1 / -1; font-size: 28px; color: #8b8b8b; padding: 32px 0; }
+  .cw-low { color: var(--sr-text-faint, #8b8b8b); margin-left: 12px; }
+  .cw-rain { font-size: 18px; color: var(--sr-text-faint, #8b8b8b); margin-top: 6px; min-height: 24px; }
+  .cw-empty { grid-column: 1 / -1; font-size: 28px; color: var(--sr-text-faint, #8b8b8b); padding: 32px 0; }
 </style>
 <main class="cw-root">
   <div class="cw-top">
@@ -145,9 +145,9 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
       'Analog dial with a sweeping second hand, current conditions, a sunrise-to-sunset arc and the next 12 hours of temperature.',
     dataRefreshSeconds: 60,
     html: `<style>
-  /* Colors. Change them here to restyle the screen. */
+  /* Colors follow the Design theme; the fallbacks are the defaults. Change them here to restyle the screen. */
   :root {
-    --dl-accent: #a995ff; /* second hand, centre cap, sun */
+    --dl-accent: var(--sr-accent-text, #a995ff); /* second hand, centre cap, sun */
     --dl-accent-dim: #3b3166; /* sun before sunrise and after sunset */
   }
 
@@ -166,7 +166,7 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     position: fixed;
     inset: 0;
     --fg: #f2f0ea;
-    --bg: #000000;
+    --bg: var(--sr-bg, #000000);
     background-color: var(--bg);
     color: var(--fg);
     transition: --fg 2s linear, --bg 2s linear, background-color 2s linear, color 2s linear;
@@ -175,18 +175,18 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     justify-content: center;
     gap: 64px;
     padding: 0 80px;
-    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif);
     font-weight: 500;
   }
   .mono {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--sr-font-mono, "JetBrains Mono", monospace);
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: -0.01em;
   }
   .screen[data-day="false"] {
     --fg: #e8e6df;
-    --bg: #000000;
+    --bg: var(--sr-bg, #000000);
   }
 
   [data-bind-missing] { opacity: 0.5; }
@@ -201,7 +201,7 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
   }
   .dial { display: block; width: 620px; height: 620px; }
 
-  .tick-min { stroke: #2a2a2a; stroke-width: 2; }
+  .tick-min { stroke: var(--sr-border, #2a2a2a); stroke-width: 2; }
   .tick-hour { stroke: var(--fg); stroke-width: 5; }
 
   .hand {
@@ -222,7 +222,7 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     line-height: 1.2;
     letter-spacing: 0.3em;
     text-indent: 0.3em;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
     font-variant-numeric: tabular-nums lining-nums;
   }
 
@@ -235,11 +235,12 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     align-items: flex-start;
     justify-content: center;
     padding-left: 64px;
-    border-left: 1px solid #2a2a2a;
+    border-left: 1px solid var(--sr-border, #2a2a2a);
   }
   .screen[data-weather="off"] .wx { display: none; }
 
   .temp {
+    font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif);
     display: flex;
     align-items: flex-start;
     font-size: 180px;
@@ -254,18 +255,18 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     line-height: 1.1;
     letter-spacing: 0;
     margin: 10px 0 0 8px;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
   }
 
   .cond {
     margin-top: 16px;
     font-size: 34px;
     line-height: 1.1;
-    color: #c9ced8;
+    color: var(--sr-text-muted, #c9ced8);
   }
 
   .sun { display: block; margin-top: 28px; }
-  .sun__arc { fill: none; stroke: #2a2a2a; stroke-width: 2; stroke-dasharray: 2 6; }
+  .sun__arc { fill: none; stroke: var(--sr-border, #2a2a2a); stroke-width: 2; stroke-dasharray: 2 6; }
   .sun__dot { fill: var(--dl-accent); }
   .sun__dot.is-down { fill: var(--dl-accent-dim); }
   .sun__labels {
@@ -275,7 +276,7 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     margin-top: 6px;
     font-size: 20px;
     line-height: 1.2;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
     font-variant-numeric: tabular-nums lining-nums;
   }
 
@@ -294,14 +295,14 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
     margin-top: 8px;
     font-size: 18px;
     line-height: 1.25;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
   }
 
   .hl {
     margin-top: 22px;
     font-size: 22px;
     line-height: 1.25;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
     font-variant-numeric: tabular-nums lining-nums;
   }
   .hl .sep { padding: 0 20px; }
@@ -493,20 +494,20 @@ export const BUILTIN_SCREENS: BuiltinScreen[] = [
       'Big clock and greeting on black, today’s weather and a 3-day outlook on a violet block. Assigned to new displays.',
     dataRefreshSeconds: 60,
     html: `<style>
-  /* Weather panel color. Change it here to restyle the screen. */
-  :root { --mb-accent: #6136f5; }
-  .mb-root { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); background: #000; color: #f2f2f2; font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 500; }
-  .mb-mono { font-family: "JetBrains Mono", monospace; font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
+  /* Weather panel color follows the Design theme; the fallback is the default. Change it here to restyle the screen. */
+  :root { --mb-accent: var(--sr-accent, #6136f5); }
+  .mb-root { position: fixed; inset: 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); background: var(--sr-bg, #000); color: var(--sr-text, #f2f2f2); font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif); font-weight: 500; }
+  .mb-mono { font-family: var(--sr-font-mono, "JetBrains Mono", monospace); font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; }
   .mb-clock { padding: 64px; display: flex; flex-direction: column; justify-content: space-between; }
   .mb-date { font-size: 30px; color: #9aa3b2; }
   .mb-timerow { display: flex; align-items: flex-start; }
-  .mb-time { font-size: 216px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .mb-time { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 216px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .mb-ampm { font-size: 44px; color: #9aa3b2; margin: 18px 0 0 16px; }
-  .mb-greeting { font-size: 44px; color: #c9ced8; }
+  .mb-greeting { font-size: 44px; color: var(--sr-text-muted, #c9ced8); }
   .mb-weather { background: var(--mb-accent); color: #fff; padding: 56px; display: flex; flex-direction: column; justify-content: space-between; }
   .mb-place { font-size: 26px; color: #e6e0ff; }
   .mb-tempwrap { display: flex; align-items: flex-start; }
-  .mb-temp { font-size: 160px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .mb-temp { font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif); font-size: 160px; line-height: 0.9; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
   .mb-unit { font-size: 48px; margin: 12px 0 0 8px; }
   .mb-cond { font-size: 40px; margin-top: 16px; }
   .mb-hilo { font-size: 28px; margin-top: 12px; color: #e6e0ff; font-variant-numeric: tabular-nums; }
