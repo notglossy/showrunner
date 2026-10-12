@@ -40,7 +40,7 @@ conflict with the Kotlin conventions it wins. Views codebase — no Compose.
   (lifecycle, threading, API-level/OEM workarounds with the level cited), never restate code.
 - `// TODO(name): description` only. No commented-out code, no file headers.
 - Leave untouched lines alone; no whole-file reformats as a side effect.
-- Ask before adding dependencies beyond the stack in `CLAUDE.md`.
+- Ask before adding dependencies beyond the stack in `AGENTS.md`.
 - Never commit secrets, `.env`, keystores, or signing passwords.
 - Device quirks and adb steps go in `docs/device-setup.md` as soon as they're known.
 - Never require a factory reset to leave the kiosk.

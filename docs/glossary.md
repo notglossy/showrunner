@@ -18,10 +18,6 @@ A message the server pushes to a device over Server-Sent Events, one of `reload`
 
 The JSON object exposed to screens as `window.kiosk.data`, covering time and timezone, weather, and device info, refreshed from `GET /api/devices/:id/data`.
 
-## Delegation
-
-Handing a narrow, fully specified, verifiable coding task to a cheaper model via `scripts/delegate.sh`, where the result is always reviewed before commit.
-
 ## Device
 
 One kiosk unit, identified by a UUID the Android app generates on first run.
