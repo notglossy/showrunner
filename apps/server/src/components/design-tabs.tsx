@@ -21,8 +21,10 @@ export function DesignTabs() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? 'page' : undefined}
-            className={`label-mono rounded-t px-4 py-2 transition-colors ${
-              active ? 'bg-ink text-white' : 'text-subtle hover:bg-well hover:text-ink'
+            className={`label-mono rounded-t px-4 py-2 transition-colors focus-visible:-outline-offset-2 ${
+              active
+                ? 'bg-ink focus-visible:outline-signal-tint text-white'
+                : 'text-subtle hover:bg-well hover:text-ink'
             }`}
           >
             {tab.label}
