@@ -502,12 +502,22 @@ describe('font security properties', () => {
         body: face('latin', w.slice(0, 3), `${GSTATIC}a.woff2`),
       };
     const { fn, calls, inits } = fakeFetch(routes);
-    await addGoogleFont('Roboto Slab', { fetch: fn });
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    let ms: unknown[];
+    try {
+      await addGoogleFont('Roboto Slab', { fetch: fn });
+    } finally {
+      ms = timeout.mock.calls.map(([t]) => t);
+      timeout.mockRestore();
+    }
     expect(calls.length).toBeGreaterThan(10);
     for (const init of inits) {
       expect(init?.redirect).toBe('error');
       expect(init?.signal).toBeInstanceOf(AbortSignal);
     }
+    // One 60 s deadline for the whole add, plus a 15 s timeout on every request.
+    expect(ms.filter((t) => t === 60_000)).toHaveLength(1);
+    expect(ms.filter((t) => t === 15_000)).toHaveLength(calls.length);
   });
 
   it('aborts the other probes when one fails', async () => {
@@ -564,6 +574,9 @@ describe('font security properties', () => {
   });
 
   it('POST /api/design/fonts needs the admin and a valid name', async () => {
+    // Rejections must happen before any network call.
+    const network = vi.fn();
+    vi.stubGlobal('fetch', network);
     const post = (headers: Record<string, string>, body: unknown) =>
       addFontRoute(
         new NextRequest('http://localhost/api/design/fonts', {
@@ -578,5 +591,7 @@ describe('font security properties', () => {
     );
     expect((await post(ADMIN, { family: 'Lobster&x=1' })).status).toBe(400);
     expect((await post(ADMIN, {})).status).toBe(400);
+    expect(network).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
   });
 });
