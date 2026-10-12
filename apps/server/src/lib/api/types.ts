@@ -187,6 +187,32 @@ export interface GeocodeQuery {
   q: string;
 }
 
+// ---- Admin: design (theme, fonts, agent instructions) ---------------------------------
+
+/**
+ * Patch for the screen theme. Colors are "#rrggbb" (lowercase or uppercase); fonts are family names
+ * from the bundled or downloaded fonts. `null` clears one override. At least one value required.
+ */
+export interface UpdateThemeRequest {
+  colors?: Partial<
+    Record<
+      'bg' | 'surface' | 'border' | 'text' | 'textMuted' | 'textFaint' | 'accent' | 'accentText',
+      string | null
+    >
+  >;
+  fonts?: Partial<Record<'display' | 'body' | 'mono', string | null>>;
+}
+
+export interface AddFontRequest {
+  /** Google Fonts family name, e.g. "Roboto Slab". Trimmed; letters, digits and single spaces, 1-64 chars. */
+  family: string;
+}
+
+export interface UpdateInstructionsRequest {
+  /** Replacement for the authoring guide sent to the AI. Up to 200000 chars, not blank. */
+  text: string;
+}
+
 // ---- Admin: AI screen generation ---------------------------------------------------
 
 export interface GenerateScreenRequest {

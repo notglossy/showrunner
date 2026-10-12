@@ -1,6 +1,7 @@
 import { ScreenEditor } from '@/components/screen-editor';
 import { PageHeader } from '@/components/ui';
 import { requireAdminPage } from '@/lib/auth/session';
+import { designCss } from '@/lib/design/css';
 import { samplePayload } from '@/lib/providers/sample';
 
 // Live state on every request; never prerender.
@@ -35,6 +36,7 @@ export default async function NewScreenPage() {
           generationPrompt: null,
         }}
         sampleData={samplePayload()}
+        designCss={designCss()}
         usage={{ devices: [], playlists: [] }}
       />
     </>

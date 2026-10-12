@@ -93,6 +93,7 @@ Everything is environment variables, read by `docker compose` from `.env`.
 | `SHOWRUNNER_VERSION`         |          | `latest`                  | Server image tag: a release tag (`v0.3.0-beta.2`), `beta` (newest pre-release) or `latest` (newest full release; none yet, so use `beta` for now)                         |
 | `SHOWRUNNER_PORT`            |          | `3000`                    | Host port                                                                                                                                                                 |
 | `DATABASE_PATH`              |          | `/data/showrunner.db`     | SQLite file (inside the container)                                                                                                                                        |
+| `FONTS_DIR`                  |          | `/data/fonts`             | Fonts downloaded in the Design section (default: next to the database)                                                                                                    |
 
 ## Development
 

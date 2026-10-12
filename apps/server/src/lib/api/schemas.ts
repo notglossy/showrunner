@@ -168,6 +168,57 @@ export const UpdateSettingsRequestSchema = z
     message: 'At least one field is required',
   });
 
+const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use a #rrggbb color');
+const FontFamilyName = z.string().trim().min(1).max(64);
+
+export const UpdateThemeRequestSchema = z
+  .object({
+    colors: z
+      .object({
+        bg: HexColor.nullable().optional(),
+        surface: HexColor.nullable().optional(),
+        border: HexColor.nullable().optional(),
+        text: HexColor.nullable().optional(),
+        textMuted: HexColor.nullable().optional(),
+        textFaint: HexColor.nullable().optional(),
+        accent: HexColor.nullable().optional(),
+        accentText: HexColor.nullable().optional(),
+      })
+      .strict()
+      .optional(),
+    fonts: z
+      .object({
+        display: FontFamilyName.nullable().optional(),
+        body: FontFamilyName.nullable().optional(),
+        mono: FontFamilyName.nullable().optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+  .refine((obj) => Object.keys(obj.colors ?? {}).length + Object.keys(obj.fonts ?? {}).length > 0, {
+    message: 'At least one value is required',
+  });
+
+export const AddFontRequestSchema = z.object({
+  family: z
+    .string()
+    .trim()
+    .regex(
+      /^[A-Za-z0-9]+( [A-Za-z0-9]+)*$/,
+      'Use the Google Fonts family name: letters, digits and single spaces',
+    )
+    .max(64),
+});
+
+export const UpdateInstructionsRequestSchema = z.object({
+  // Not .trim(): leading/trailing whitespace in the guide is the owner's to keep.
+  text: z
+    .string()
+    .max(200_000)
+    .refine((s) => s.trim().length > 0, 'Instructions cannot be empty'),
+});
+
 export const GeocodeQuerySchema = z.object({
   q: z.string().trim().min(2).max(100),
 });

@@ -85,6 +85,11 @@ the runtime in the browser).
 `{"type":"hello","screenId":…,"serverTime":…}` on connect, then `{"type":"reload"}`,
 `{"type":"navigate","screenId":…}`, `{"type":"refreshData"}`. Comment pings every 25 s.
 
+### `GET /kiosk/custom-fonts/:file`
+
+A downloaded font (`<32 hex>.woff2`), unauthenticated and cached as immutable. Referenced by the
+`@font-face` rules in every kiosk document.
+
 ### `POST /api/devices/:id/log`
 Device token only. Body `{ "level": "error", "message": "…", "source", "line", "column", "stack",
 "url", "screenId" }`. 202 `{ "stored": true }`, or 429 `{ "stored": false }` when over 60 lines/min.
@@ -118,6 +123,15 @@ The last 1000 lines per device are kept.
 | `GET /api/settings` | | `{ effective, defaults, overrides, kioskExitPinSet, hideBuiltinScreens }` (weather location/units/name, timezone; exit PIN set; built-in screens hidden) |
 | `PATCH /api/settings` | any of `weatherLatitude, weatherLongitude, weatherUnits, weatherLocationName, timezone`, `kioskExitPin` (4-8 digits; `null` clears), `hideBuiltinScreens` (boolean: hides built-in screens from the dashboard's Screens list and screen pickers) | same as GET; connected devices refresh data |
 | `GET /api/settings/geocode` | `?q=paris` | `{ results: [{ label, latitude, longitude, timezone }] }` (Open-Meteo geocoding) |
+| `GET /api/design/theme` | | `{ effective, defaults, overrides, availableFonts }`: `colors` (`bg, surface, border, text, textMuted, textFaint, accent, accentText`, each `#rrggbb`) and `fonts` (`display, body, mono`: family names) |
+| `PATCH /api/design/theme` | `{ colors?: { <key>: "#rrggbb" or null }, fonts?: { <key>: family or null } }` (`null` clears one value; fonts must be bundled or downloaded) | same as GET; every device reloads |
+| `DELETE /api/design/theme` | | same as GET, back to the defaults; every device reloads |
+| `GET /api/design/fonts` | | `{ fonts: [{ family, files: [{ file, weight }], bytes, addedAt }] }` |
+| `POST /api/design/fonts` | `{ family }` (Google Fonts family name: letters, digits, single spaces, ≤ 64 chars) | `201 { font }`; downloads the Latin subset from Google Fonts (`fonts.googleapis.com` / `fonts.gstatic.com` only, ≤ 1.5 MB per file, ≤ 5 MB per family); 404 unknown family, 409 already installed; every device reloads |
+| `DELETE /api/design/fonts/:family` | | `204`; 409 while the theme uses it; every device reloads |
+| `GET /api/design/instructions` | | `{ text, defaultText, customised, defaultChanged }`: the guide the AI follows (default `docs/screen-authoring.md`) |
+| `PUT /api/design/instructions` | `{ text }` (1-200000 chars) | same as GET (text equal to the default clears the customisation) |
+| `DELETE /api/design/instructions` | | same as GET, back to the default |
 | `GET /api/preview/data` | | live `kiosk.data` for a placeholder device (editor preview) |
 | `GET /api/ai/config` | | `{ configured, defaultModel, provider, models[] }` (never the key; models from the provider's `/models`) |
 | `POST /api/ai/generate-screen` | `{ instruction, currentHtml?, model?, previewErrors? }` | `application/x-ndjson` stream of events (below); 503 `not_configured` without `AI_API_KEY` |

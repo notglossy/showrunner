@@ -39,7 +39,7 @@ scripts/        delegate.sh (OMP delegation), install.sh (Phase 2)
 
 ```
 app/(dashboard)/                 admin UI (server components load via services; client components mutate via /api)
-                                 devices, devices/[id], screens (+ new, [id] editor), playlists (+ new, [id]), settings
+                                 devices, devices/[id], screens (+ new, [id] editor), playlists (+ new, [id]), design, settings
 components/                      dashboard client components: ui.tsx primitives, code-editor (CodeMirror 6),
                                  screen-preview (sandboxed 1280x800 iframe, runtime viewer "preview", postMessage data)
 app/device/[deviceId]/route.ts   the page the WebView loads (pairing / unassigned / screen + runtime)
@@ -54,11 +54,14 @@ lib/providers/                   DataProvider interface, cache, time/weather/dev
                                  sample.ts (browser-shaped sample kiosk.data for previews/tests)
 lib/render/                      document shell + system screens
 lib/ai/                          AI screen generation: client.ts (streams any OpenAI-compatible /chat/completions),
-                                 prompt.ts (authoring doc = system prompt), validate.ts (template rules, also used by
+                                 prompt.ts (authoring doc or owner's override + theme/fonts appendix), validate.ts (template rules, also used by
                                  seed tests), extract.ts, generate.ts (call -> validate -> one repair turn)
+lib/design/                      Design section: tokens.ts (theme tokens + defaults, client-safe), theme.ts, fonts.ts
+                                 (Google Fonts download into FONTS_DIR, served at /kiosk/custom-fonts), instructions.ts
+                                 (owner's AI guide override), css.ts (designCss() injected into every kiosk document)
 lib/settings/                    dashboard settings (weather location/units, timezone) overriding env defaults; geocoding
 lib/client/                      browser-side helpers (api() fetch wrapper with typed errors, formatting)
-lib/seed/screens.ts              built-in screens, inserted when the screens table is empty
+lib/seed/screens.ts              built-in screens (theme-aware), inserted on first boot, synced on every start
 public/kiosk/runtime.js          window.kiosk runtime (plain JS); its contract is docs/screen-authoring.md
 instrumentation.ts -> lib/startup.ts   env check, migrate, seed, start scheduler
 ```
@@ -105,7 +108,8 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build -d   #
 Config is env vars only: `ADMIN_PASSWORD`, `DEVICE_SHARED_SECRET`, `WEATHER_LAT`, `WEATHER_LON`,
 `WEATHER_UNITS` (imperial|metric), `KIOSK_TIMEZONE`, `AI_BASE_URL` / `AI_API_KEY` / `AI_MODEL` (AI screen generation via
 any OpenAI-compatible API, OpenRouter by default), `DATABASE_PATH`
-(image default `/data/showrunner.db`), `SHOWRUNNER_VERSION` (compose only: image tag). The release workflow
+(image default `/data/showrunner.db`), `FONTS_DIR` (downloaded fonts, default next to the database),
+`SHOWRUNNER_VERSION` (compose only: image tag). The release workflow
 builds `apps/server/Dockerfile` (repo root as context) for amd64 and arm64 and pushes `ghcr.io/notglossy/showrunner`
 on every `v*` tag; the prod host (amd64, Komodo) pins one of those tags. Server-only fixes ship by tagging a new
 version, which also bumps the app's versionName.

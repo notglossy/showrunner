@@ -25,11 +25,14 @@ export function ScreenPreview({
   html,
   title,
   sampleData,
+  designCss,
   onLogs,
 }: {
   html: string;
   title: string;
   sampleData: KioskDataPayload;
+  /** Theme and downloaded-font CSS from the server (lib/design/css.ts), as a device would get it. */
+  designCss: string;
   onLogs?: (logs: PreviewLog[]) => void;
 }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -76,13 +79,14 @@ export function ScreenPreview({
             urls: deviceUrls('preview'),
             data: currentData(),
           },
+          designCss,
         }),
       );
     }, 400);
     return () => clearTimeout(id);
     // currentData is read at render time on purpose; data updates are pushed via postMessage instead.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [html, title, renderKey]);
+  }, [html, title, designCss, renderKey]);
 
   // Collect runtime errors reported by the iframe.
   useEffect(() => {

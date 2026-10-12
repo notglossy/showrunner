@@ -1,7 +1,7 @@
 <style>
-  /* Colors. Change them here to restyle the screen. */
+  /* Colors follow the Design theme; the fallbacks are the defaults. Change them here to restyle the screen. */
   :root {
-    --dl-accent: #a995ff; /* second hand, centre cap, sun */
+    --dl-accent: var(--sr-accent-text, #a995ff); /* second hand, centre cap, sun */
     --dl-accent-dim: #3b3166; /* sun before sunrise and after sunset */
   }
 
@@ -20,7 +20,7 @@
     position: fixed;
     inset: 0;
     --fg: #f2f0ea;
-    --bg: #000000;
+    --bg: var(--sr-bg, #000000);
     background-color: var(--bg);
     color: var(--fg);
     transition: --fg 2s linear, --bg 2s linear, background-color 2s linear, color 2s linear;
@@ -29,18 +29,18 @@
     justify-content: center;
     gap: 64px;
     padding: 0 80px;
-    font-family: "Space Grotesk", system-ui, sans-serif;
+    font-family: var(--sr-font-body, "Space Grotesk", system-ui, sans-serif);
     font-weight: 500;
   }
   .mono {
-    font-family: "JetBrains Mono", monospace;
+    font-family: var(--sr-font-mono, "JetBrains Mono", monospace);
     font-weight: 400;
     text-transform: uppercase;
     letter-spacing: -0.01em;
   }
   .screen[data-day="false"] {
     --fg: #e8e6df;
-    --bg: #000000;
+    --bg: var(--sr-bg, #000000);
   }
 
   [data-bind-missing] { opacity: 0.5; }
@@ -55,7 +55,7 @@
   }
   .dial { display: block; width: 620px; height: 620px; }
 
-  .tick-min { stroke: #2a2a2a; stroke-width: 2; }
+  .tick-min { stroke: var(--sr-border, #2a2a2a); stroke-width: 2; }
   .tick-hour { stroke: var(--fg); stroke-width: 5; }
 
   .hand {
@@ -76,7 +76,7 @@
     line-height: 1.2;
     letter-spacing: 0.3em;
     text-indent: 0.3em;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
     font-variant-numeric: tabular-nums lining-nums;
   }
 
@@ -89,11 +89,12 @@
     align-items: flex-start;
     justify-content: center;
     padding-left: 64px;
-    border-left: 1px solid #2a2a2a;
+    border-left: 1px solid var(--sr-border, #2a2a2a);
   }
   .screen[data-weather="off"] .wx { display: none; }
 
   .temp {
+    font-family: var(--sr-font-display, "Space Grotesk", system-ui, sans-serif);
     display: flex;
     align-items: flex-start;
     font-size: 180px;
@@ -108,18 +109,18 @@
     line-height: 1.1;
     letter-spacing: 0;
     margin: 10px 0 0 8px;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
   }
 
   .cond {
     margin-top: 16px;
     font-size: 34px;
     line-height: 1.1;
-    color: #c9ced8;
+    color: var(--sr-text-muted, #c9ced8);
   }
 
   .sun { display: block; margin-top: 28px; }
-  .sun__arc { fill: none; stroke: #2a2a2a; stroke-width: 2; stroke-dasharray: 2 6; }
+  .sun__arc { fill: none; stroke: var(--sr-border, #2a2a2a); stroke-width: 2; stroke-dasharray: 2 6; }
   .sun__dot { fill: var(--dl-accent); }
   .sun__dot.is-down { fill: var(--dl-accent-dim); }
   .sun__labels {
@@ -129,7 +130,7 @@
     margin-top: 6px;
     font-size: 20px;
     line-height: 1.2;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
     font-variant-numeric: tabular-nums lining-nums;
   }
 
@@ -148,14 +149,14 @@
     margin-top: 8px;
     font-size: 18px;
     line-height: 1.25;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
   }
 
   .hl {
     margin-top: 22px;
     font-size: 22px;
     line-height: 1.25;
-    color: #8b8b8b;
+    color: var(--sr-text-faint, #8b8b8b);
     font-variant-numeric: tabular-nums lining-nums;
   }
   .hl .sep { padding: 0 20px; }

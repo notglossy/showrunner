@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { ScreenEditor } from '@/components/screen-editor';
 import { Badge, PageHeader } from '@/components/ui';
 import { requireAdminPage } from '@/lib/auth/session';
+import { designCss } from '@/lib/design/css';
 import { samplePayload } from '@/lib/providers/sample';
 import { isReadOnlyScreen } from '@/lib/screens/read-only';
 import { findScreen, screenUsage } from '@/lib/screens/service';
@@ -37,6 +38,7 @@ export default async function ScreenPage({ params }: PageProps<'/screens/[id]'>)
           generationPrompt: screen.generationPrompt,
         }}
         sampleData={samplePayload()}
+        designCss={designCss()}
         usage={screenUsage(screen.id)}
       />
     </>

@@ -29,3 +29,6 @@ ok<InSync<typeof S.UpdateScreenRequestSchema, T.UpdateScreenRequest>>();
 ok<InSync<typeof S.PlaylistItemInputSchema, T.PlaylistItemInput>>();
 ok<InSync<typeof S.CreatePlaylistRequestSchema, T.CreatePlaylistRequest>>();
 ok<InSync<typeof S.UpdatePlaylistRequestSchema, T.UpdatePlaylistRequest>>();
+ok<InSync<typeof S.UpdateThemeRequestSchema, T.UpdateThemeRequest>>();
+ok<InSync<typeof S.AddFontRequestSchema, T.AddFontRequest>>();
+ok<InSync<typeof S.UpdateInstructionsRequestSchema, T.UpdateInstructionsRequest>>();
