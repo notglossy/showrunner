@@ -13,7 +13,7 @@ const TABS = [
 export function DesignTabs() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Design" className="border-ink flex gap-1 border-b pb-px">
+    <nav aria-label="Design" className="border-ink flex gap-1 border-b">
       {TABS.map((tab) => {
         const active = pathname === tab.href;
         return (
@@ -21,8 +21,10 @@ export function DesignTabs() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? 'page' : undefined}
-            className={`label-mono focus-visible:outline-signal-tint rounded-t px-4 py-2 ${
-              active ? 'bg-ink text-white' : 'text-subtle hover:bg-gunmetal hover:text-white'
+            className={`label-mono rounded-t px-4 py-2 transition-colors focus-visible:-outline-offset-2 ${
+              active
+                ? 'bg-ink focus-visible:outline-signal-tint text-white'
+                : 'text-subtle hover:bg-well hover:text-ink'
             }`}
           >
             {tab.label}
