@@ -37,7 +37,8 @@ export function DesignTheme({ state }: { state: ThemeState }) {
   const [fonts, setFonts] = useState<Record<ThemeFontKey, string>>(state.effective.fonts);
   // Last valid hex per color, so the swatch holds still while the text box is mid-edit.
   const [lastValid, setLastValid] = useState<Record<ThemeColorKey, string>>(state.effective.colors);
-  const [fontList, setFontList] = useState<string[]>(state.availableFonts);
+  // From props, not state: adding or deleting a font refreshes the page's server data.
+  const fontList = state.availableFonts;
   const [pending, setPending] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +59,6 @@ export function DesignTheme({ state }: { state: ThemeState }) {
     setColors(next.effective.colors);
     setLastValid(next.effective.colors);
     setFonts(next.effective.fonts);
-    setFontList(next.availableFonts);
   }
 
   async function save() {
