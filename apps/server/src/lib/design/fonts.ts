@@ -309,7 +309,7 @@ export function deleteCustomFont(family: string): void {
   const font = all.find((f) => f.family === family);
   if (!font) throw notFound(`Font ${family}`);
   if (Object.values(getTheme().effective.fonts).includes(font.family))
-    throw conflict(`The theme uses ${font.family}; pick another font first`);
+    throw conflict(`The theme uses ${font.family}; pick another font on the Theme tab first`);
 
   const rest = all.filter((f) => f !== font);
   const stillUsed = new Set(rest.flatMap((f) => f.files.map((x) => x.file)));
