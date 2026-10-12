@@ -80,7 +80,10 @@ async function fetchCss(
       await res.body?.cancel().catch(() => undefined);
       return null;
     }
-    if (!res.ok) throw upstream(`Google Fonts answered HTTP ${res.status}`);
+    if (!res.ok) {
+      await res.body?.cancel().catch(() => undefined);
+      throw upstream(`Google Fonts answered HTTP ${res.status}`);
+    }
     const buf = await readCapped(res, MAX_CSS_BYTES);
     if (!buf) throw upstream('Google Fonts returned an unexpectedly large stylesheet');
     return buf.toString('utf8');
@@ -214,6 +217,13 @@ export async function addGoogleFont(
   deps: { fetch?: typeof fetch } = {},
 ): Promise<CustomFont> {
   const fetchFn = deps.fetch ?? fetch;
+  // The route validates too; this keeps the URL and CSS safe for any other caller.
+  if (family.length > 64 || !SAFE_FAMILY.test(family))
+    throw new ApiError(
+      400,
+      'bad_request',
+      'Use the Google Fonts family name: letters, digits and single spaces',
+    );
   if (KIOSK_FONTS.some((f) => same(f.family, family)))
     throw new ApiError(400, 'bad_request', `${family} is already bundled with ShowRunner`);
   if (listCustomFonts().some((f) => same(f.family, family)))
